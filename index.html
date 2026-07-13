@@ -127,7 +127,7 @@
                             <!-- IDENTITAS KOP & SEKOLAH -->
                             <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
                                 <h3 class="text-xs font-bold text-slate-500 mb-3"><i class="fas fa-building mr-1"></i> IDENTITAS INSTITUSI</h3>
-                                <input type="text" id="kop-prov" placeholder="Provinsi (Mis: SUMATERA UTARA)" class="w-full mb-2 px-3 py-2 text-sm rounded-lg border outline-none">
+                                <input type="text" id="kop-prov" placeholder="Provinsi (Mis: GORONTALO)" class="w-full mb-2 px-3 py-2 text-sm rounded-lg border outline-none">
                                 <input type="text" id="kop-dinas" placeholder="Dinas (Mis: DINAS PENDIDIKAN)" class="w-full mb-2 px-3 py-2 text-sm rounded-lg border outline-none">
                                 <input type="text" id="nama-sekolah" placeholder="Nama Sekolah (Mis: SMAN 1...)" class="w-full mb-2 px-3 py-2 text-sm rounded-lg border outline-none">
                                 <input type="text" id="kop-alamat" placeholder="Alamat Lengkap" class="w-full mb-2 px-3 py-2 text-sm rounded-lg border outline-none">
@@ -439,7 +439,7 @@
         // --- 4. Logic Generator Dokumen (Semua Administrasi) ---
         window.generateModul = function() {
             // Ambil Identitas
-            const prov = document.getElementById('kop-prov').value || "PROVINSI SUMATERA UTARA";
+            const prov = document.getElementById('kop-prov').value || "PROVINSI GORONTALO";
             const dinas = document.getElementById('kop-dinas').value || "DINAS PENDIDIKAN";
             const sekolah = document.getElementById('nama-sekolah').value || "SMA NEGERI 1 BANGUN PURBA";
             const alamat = document.getElementById('kop-alamat').value || "Jln. Printis Kemerdekaan Bangun Purba 20581, 061-7989130";
