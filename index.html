@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pusat Generator Modul Ajar SMA Terpadu</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { poppins: ['Poppins', 'sans-serif'], },
+                    colors: { primary: '#4f46e5', secondary: '#ec4899', accent: '#8b5cf6', }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Poppins', sans-serif; }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.5); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
+        }
+        .gradient-text { background: linear-gradient(135deg, #4f46e5, #ec4899, #f59e0b); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .blob { position: absolute; filter: blur(80px); z-index: -1; opacity: 0.6; animation: float 10s infinite ease-in-out; }
+        @keyframes float { 0%, 100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-20px) scale(1.05); } }
+        
+        #preview-container { background-color: #e2e8f0; padding: 20px; display: flex; justify-content: center; }
+        #output-modul { 
+            background: white; color: #000; font-family: 'Times New Roman', Times, serif; font-size: 11pt; line-height: 1.15; 
+            padding: 2.5cm; width: 21cm; min-height: 29.7cm; box-shadow: 0 10px 25px rgba(0,0,0,0.15); text-align: justify; overflow-x: auto;
+            -webkit-user-select: none; -ms-user-select: none; user-select: none;
+        }
+        #output-modul h1 { font-size: 14pt; font-weight: bold; text-align: center; text-transform: uppercase; margin-bottom: 24px;}
+        #output-modul h2 { font-size: 12pt; font-weight: bold; margin-top: 24px; margin-bottom: 12px;}
+        #output-modul p { margin-bottom: 12px; }
+        #output-modul ul { list-style-type: disc; margin-left: 24px; margin-bottom: 12px; }
+        #output-modul li { margin-bottom: 4px; }
+        #output-modul table { width: 100%; border-collapse: collapse; margin-top: 15px; margin-bottom: 15px; font-size: 10pt; }
+        #output-modul th { background-color: #f8fafc; font-weight: bold; text-align: center; padding: 6px; border: 1px solid #000; }
+        #output-modul td { padding: 6px; border: 1px solid #000; vertical-align: top; }
+        #output-modul table.no-border, #output-modul table.no-border th, #output-modul table.no-border td { border: none !important; background-color: transparent !important; }
+        .page-break { page-break-before: always; }
+        .avoid-break { page-break-inside: avoid; }
+        .text-vertical { writing-mode: vertical-rl; transform: rotate(180deg); text-align: center; white-space: nowrap; }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen relative overflow-x-hidden text-slate-800">
+
+    <div class="blob bg-purple-300 w-96 h-96 rounded-full top-0 left-10"></div>
+    <div class="blob bg-pink-300 w-96 h-96 rounded-full bottom-10 right-10" style="animation-delay: 2s;"></div>
+    <div class="blob bg-blue-300 w-80 h-80 rounded-full top-1/3 left-1/3" style="animation-delay: 4s;"></div>
+
+    <div class="container mx-auto px-4 py-10 relative z-10 max-w-7xl">
+        <div class="flex justify-end mb-4">
+            <button id="auth-btn" onclick="handleAuthClick()" class="px-5 py-2.5 bg-white/80 backdrop-blur rounded-xl border border-slate-200 shadow-sm text-sm font-bold text-slate-700 hover:bg-slate-50 transition-all flex items-center gap-2">
+                <i class="fas fa-lock"></i> Login Akses
+            </button>
+        </div>
+
+        <header class="text-center mb-12">
+            <div class="inline-block bg-white/50 backdrop-blur px-6 py-2 rounded-full mb-4 shadow-sm border border-white">
+                <span class="text-sm font-bold tracking-wider text-accent uppercase"><i class="fas fa-rocket mr-2"></i>Kurikulum Merdeka 2026</span>
+            </div>
+            <h1 class="text-4xl md:text-5xl font-extrabold mb-4 gradient-text drop-shadow-sm">Pusat Generator Instrumen Ajar SMA</h1>
+            <p class="text-lg text-slate-600 font-medium max-w-2xl mx-auto">Sistem Otomatisasi Prota, Prosem, AME, KKTP, dan Modul Ajar Terpadu (RPP/LKPD/Infografis).</p>
+        </header>
+
+        <div class="flex flex-wrap justify-center gap-4 mb-8">
+            <button onclick="switchTab('tab-pemetaan')" id="btn-pemetaan" class="tab-btn active px-8 py-3 rounded-full font-bold transition-all duration-300 bg-gradient-to-r from-accent to-primary text-white shadow-lg hover:-translate-y-1">
+                <i class="fas fa-map-signs mr-2"></i>Pemetaan CP & Materi
+            </button>
+            <button onclick="switchTab('tab-generator')" id="btn-generator" class="tab-btn px-8 py-3 rounded-full font-bold transition-all duration-300 bg-white text-slate-600 shadow border border-slate-200 hover:bg-slate-50 hover:-translate-y-1">
+                <i class="fas fa-magic mr-2"></i>Generator Instrumen
+            </button>
+        </div>
+
+        <div id="tab-pemetaan" class="tab-content block transition-all duration-500 animate-fade-in">
+            <div class="glass-card rounded-3xl p-6 md:p-10 max-w-4xl mx-auto">
+                <div class="flex items-center gap-3 mb-6">
+                    <div class="bg-blue-100 p-3 rounded-xl text-blue-600"><i class="fas fa-book-open text-xl"></i></div>
+                    <h2 class="text-2xl font-bold text-slate-800">Pemetaan Capaian Pembelajaran</h2>
+                </div>
+                <div class="mb-8">
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Pilih Mata Pelajaran:</label>
+                    <select id="mapel-pemetaan" onchange="renderPemetaanDetail()" class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white/80 focus:border-accent outline-none">
+                        <option value="" disabled selected>-- Pilih Mata Pelajaran --</option>
+                        <!-- Options generated identically to generator dropdown -->
+                    </select>
+                </div>
+                <div id="pemetaan-result" class="hidden animate-fade-in"></div>
+            </div>
+        </div>
+
+        <div id="tab-generator" class="tab-content hidden transition-all duration-500 animate-fade-in">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                <!-- Form Kiri -->
+                <div class="lg:col-span-4 space-y-6">
+                    <div class="glass-card p-6 rounded-3xl sticky top-6 max-h-[90vh] overflow-y-auto">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="bg-pink-100 p-3 rounded-xl text-pink-600"><i class="fas fa-sliders-h text-xl"></i></div>
+                            <h2 class="text-xl font-bold text-slate-800">Parameter Dokumen</h2>
+                        </div>
+                        
+                        <div class="space-y-4">
+                            <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-3">
+                                <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">Identitas Guru & Kepsek</h3>
+                                <div><input type="text" id="nama-guru" placeholder="Nama Guru (Misal: Budi, S.Pd.)" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 outline-none"></div>
+                                <div><input type="text" id="nip-guru" placeholder="NIP Guru" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 outline-none"></div>
+                                <div><input type="text" id="nama-kepsek" placeholder="Nama Kepala Sekolah" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 outline-none"></div>
+                                <div><input type="text" id="nip-kepsek" placeholder="NIP Kepala Sekolah" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 outline-none"></div>
+                            </div>
+
+                            <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-3">
+                                <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">Data Institusi</h3>
+                                <div><input type="text" id="provinsi" placeholder="Provinsi (Cth: SUMATERA UTARA)" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 outline-none"></div>
+                                <div><input type="text" id="dinas" placeholder="Dinas Pendidikan / Cabdis" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 outline-none"></div>
+                                <div><input type="text" id="nama-sekolah" placeholder="Nama Sekolah (Cth: SMAN 1...)" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 outline-none"></div>
+                                <div><input type="text" id="alamat-sekolah" placeholder="Alamat & Telepon Sekolah" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 outline-none"></div>
+                                <div><input type="text" id="email-sekolah" placeholder="Email Sekolah" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 outline-none"></div>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <input type="text" id="tempat" placeholder="Kota TTD" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 outline-none">
+                                    <input type="text" id="tahun-pelajaran" placeholder="Tapel (Cth: 2026/2027)" value="2026/2027" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 outline-none">
+                                </div>
+                            </div>
+                            
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-700 mb-1">JP / Minggu</label>
+                                    <input type="number" id="gen-jp-minggu" value="4" min="1" max="10" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-700 mb-1">Semester</label>
+                                    <select id="gen-semester" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 outline-none">
+                                        <option value="Ganjil">Ganjil</option>
+                                        <option value="Genap">Genap</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-2">Jenis Dokumen</label>
+                                <select id="gen-jenis-doc" onchange="handleDocTypeChange()" class="w-full px-4 py-2.5 text-sm rounded-xl border border-slate-200 bg-white/80 outline-none focus:border-accent">
+                                    <option value="" disabled selected>-- Pilih Dokumen --</option>
+                                    <option value="AME">Analisis Minggu Efektif (AME)</option>
+                                    <option value="Prota">Program Tahunan (Prota)</option>
+                                    <option value="Prosem">Program Semester (Prosem)</option>
+                                    <option value="ATP">Tujuan Pembelajaran & ATP</option>
+                                    <option value="KKTP">KKTP (Kriteria Ketercapaian)</option>
+                                    <option value="Modul Ajar">Modul Ajar (Rencana Sesi)</option>
+                                    <option value="Asesmen">Rancangan Asesmen</option>
+                                    <option value="Nilai">Format Daftar Nilai</option>
+                                </select>
+                            </div>
+
+                            <!-- Opsi Sub-Menu Modul Ajar (Animasi Muncul) -->
+                            <div id="modul-options" class="hidden bg-indigo-50 border border-indigo-200 p-3 rounded-xl">
+                                <label class="block text-xs font-bold text-indigo-700 mb-2">Spesifikasi Cetak Modul:</label>
+                                <div class="space-y-2 text-sm">
+                                    <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="modul_output" value="rpp" checked class="text-indigo-600"> <span>1. Skenario Guru (RPP)</span></label>
+                                    <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="modul_output" value="lkpd" class="text-indigo-600"> <span>2. Cetak Lembar Kerja (LKPD)</span></label>
+                                    <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="modul_output" value="infografis" class="text-indigo-600"> <span>3. Poster Rangkuman Materi</span></label>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-2">Mata Pelajaran</label>
+                                <select id="gen-mapel" onchange="updateTopikDropdown()" class="w-full px-4 py-2.5 text-sm rounded-xl border border-slate-200 bg-white/80 outline-none">
+                                    <option value="" disabled selected>-- Pilih Mapel --</option>
+                                    <optgroup label="Pendidikan Agama">
+                                        <option value="PAI">Pendidikan Agama Islam</option>
+                                        <option value="PAK">Pendidikan Agama Kristen</option>
+                                        <option value="Katolik">Pendidikan Agama Katolik</option>
+                                        <option value="Hindu">Pendidikan Agama Hindu</option>
+                                        <option value="Buddha">Pendidikan Agama Buddha</option>
+                                    </optgroup>
+                                    <optgroup label="Umum (Wajib)">
+                                        <option value="Pancasila">Pendidikan Pancasila</option>
+                                        <option value="B.Indonesia">Bahasa Indonesia</option>
+                                        <option value="Matematika">Matematika</option>
+                                        <option value="B.Inggris">Bahasa Inggris</option>
+                                        <option value="Sejarah">Sejarah</option>
+                                        <option value="PJOK">PJOK</option>
+                                    </optgroup>
+                                    <optgroup label="MIPA & IPS">
+                                        <option value="Fisika">Fisika</option>
+                                        <option value="Kimia">Kimia</option>
+                                        <option value="Biologi">Biologi</option>
+                                        <option value="Geografi">Geografi</option>
+                                        <option value="Sosiologi">Sosiologi</option>
+                                        <option value="Ekonomi">Ekonomi</option>
+                                    </optgroup>
+                                    <optgroup label="Mata Pelajaran Tingkat Lanjut">
+                                        <option value="Matematika Lanjut">Matematika Tingkat Lanjut</option>
+                                        <option value="B.Inggris Lanjut">Bahasa Inggris Tingkat Lanjut</option>
+                                        <option value="Fisika Lanjut">Fisika Tingkat Lanjut</option>
+                                    </optgroup>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-2">Fase / Kelas</label>
+                                <select id="gen-kelas" onchange="updateTopikDropdown()" class="w-full px-4 py-2.5 text-sm rounded-xl border border-slate-200 bg-white/80 outline-none">
+                                    <option value="" disabled selected>-- Pilih Kelas --</option>
+                                    <option value="X">Fase E / Kelas X</option>
+                                    <option value="XI">Fase F / Kelas XI</option>
+                                    <option value="XII">Fase F / Kelas XII</option>
+                                </select>
+                            </div>
+
+                            <div id="container-topik" class="hidden bg-blue-50 p-3 rounded-xl border border-blue-200">
+                                <label class="block text-sm font-semibold text-slate-700 mb-2">Pilih Topik Materi</label>
+                                <select id="gen-topik-pilih" onchange="fillTopikManual()" class="w-full px-3 py-2.5 text-sm rounded-lg border border-blue-300 bg-white outline-none mb-2">
+                                    <option value="" disabled selected>-- Pilih Topik --</option>
+                                </select>
+                                <div class="grid grid-cols-2 gap-2 text-xs">
+                                    <div><label>Alokasi JP:</label><input type="number" id="gen-jp" class="w-full px-2 py-1 border rounded"></div>
+                                    <div><label>Pertemuan:</label><input type="number" id="gen-pertemuan" class="w-full px-2 py-1 border rounded"></div>
+                                </div>
+                                <div class="mt-2 text-xs">
+                                    <label>Tujuan Pembelajaran:</label>
+                                    <textarea id="gen-tp" rows="2" class="w-full px-2 py-1 border rounded"></textarea>
+                                </div>
+                                <input type="hidden" id="gen-topik">
+                            </div>
+
+                            <button onclick="generateModul()" class="w-full py-3 rounded-xl font-bold text-white bg-gradient-to-r from-secondary to-accent shadow-lg hover:-translate-y-1 transition-all flex items-center justify-center gap-2">
+                                <i class="fas fa-magic"></i> Buat Dokumen
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-8">
+                    <div class="glass-card p-6 md:p-8 rounded-3xl h-full border-t-4 border-t-accent shadow-xl flex flex-col">
+                        <div class="flex items-center justify-between gap-3 mb-4 border-b border-slate-200 pb-4">
+                            <h2 class="text-xl font-bold text-slate-800">Pratinjau Dokumen</h2>
+                            <div class="flex flex-wrap gap-2" id="action-buttons-container">
+                                <button id="btn-dynamic-download" onclick="triggerDynamicDownload()" class="text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 py-2 px-3 rounded-lg transition-colors flex items-center gap-1 shadow-sm"><i class="fas fa-file-download"></i> Unduh File</button>
+                                <button onclick="downloadPDF()" class="text-xs font-semibold bg-red-100 hover:bg-red-200 text-red-700 py-2 px-3 rounded-lg transition-colors flex items-center gap-1 shadow-sm"><i class="fas fa-file-pdf"></i> PDF</button>
+                                <button onclick="copyOutput()" class="text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 py-2 px-3 rounded-lg transition-colors flex items-center gap-1 shadow-sm"><i class="far fa-copy"></i> Salin</button>
+                            </div>
+                        </div>
+                        
+                        <div id="preview-container" class="flex-grow overflow-y-auto max-h-[75vh] rounded-xl">
+                            <div id="output-modul">
+                                <div class="h-full flex flex-col items-center justify-center text-slate-400 pb-10">
+                                    <i class="fas fa-inbox text-5xl mb-4 text-slate-200"></i>
+                                    <p class="font-medium text-lg text-slate-500">Kertas Dokumen</p>
+                                    <p class="text-sm">Isi parameter di samping dan klik Buat Dokumen.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="login-modal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center transition-all">
+        <div class="bg-white rounded-3xl p-8 max-w-md w-full mx-4 shadow-2xl relative animate-fade-in">
+            <button onclick="toggleLoginModal(false)" class="absolute top-4 right-4 text-slate-400 hover:text-red-500 transition-colors"><i class="fas fa-times text-xl"></i></button>
+            <div class="text-center mb-6">
+                <div class="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 text-blue-600"><i class="fas fa-user-lock text-2xl"></i></div>
+                <h3 class="text-2xl font-bold text-slate-800">Akses Terkunci</h3>
+                <p class="text-sm text-slate-500 mt-2">Masuk (login) terlebih dahulu untuk mengunduh Word/Excel/PDF atau menyalin dokumen ini.</p>
+            </div>
+            
+            <div class="space-y-4 mb-6">
+                <input type="text" id="login-username" placeholder="Username" class="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:border-blue-500">
+                <input type="password" id="login-password" placeholder="Password" class="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:border-blue-500">
+                <p id="login-error" class="text-red-500 text-sm hidden font-medium text-center bg-red-50 py-2 rounded-lg">Username atau Password salah!</p>
+                <button onclick="processLogin()" class="w-full py-3 rounded-xl font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-lg transition-all">Masuk Sekarang</button>
+            </div>
+            <div class="text-center pt-4 border-t border-slate-100">
+                <a href="https://wa.me/6282199689552?text=Halo%20Admin,%20saya%20butuh%20akses%20login%20Generator." target="_blank" class="text-sm font-semibold text-green-600 hover:underline"><i class="fab fa-whatsapp"></i> Hubungi Admin via WA</a>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="fixed bottom-5 right-5 bg-slate-800 text-white px-6 py-3 rounded-xl shadow-2xl transform translate-y-20 opacity-0 pointer-events-none transition-all duration-300 z-50 flex items-center gap-3 font-medium">
+        <i class="fas fa-shield-alt text-accent"></i><span id="toast-message">Pesan</span>
+    </div>
+
+    <script>
+        // --- 0. SISTEM KEAMANAN ---
+        window.showToast = function(message) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-message').innerText = message;
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            clearTimeout(window.toastTimer);
+            window.toastTimer = setTimeout(() => { toast.classList.add('translate-y-20', 'opacity-0'); }, 3000);
+        };
+        document.addEventListener('keydown', function(e) {
+            if ((e.ctrlKey || e.metaKey) && (e.key === 's' || e.key === 'S')) { e.preventDefault(); showToast("Menyimpan halaman dinonaktifkan."); return false; }
+            if (e.key === 'F12' || e.keyCode === 123) { e.preventDefault(); showToast("Developer Tools (F12) dinonaktifkan."); return false; }
+            if (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'J' || e.key === 'j' || e.key === 'C' || e.key === 'c')) { e.preventDefault(); showToast("Inspeksi Elemen dinonaktifkan."); return false; }
+            if (e.ctrlKey && (e.key === 'U' || e.key === 'u')) { e.preventDefault(); showToast("Melihat sumber dinonaktifkan."); return false; }
+        });
+        document.addEventListener('contextmenu', function(e) { e.preventDefault(); showToast("Klik kanan dinonaktifkan."); return false; });
+        document.addEventListener('copy', function(e) {
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
+            if (!isLoggedIn) { e.preventDefault(); showToast("Gunakan tombol Salin resmi setelah Login."); return false; }
+        });
+
+        // --- 1. DATABASE MATERI (Sangat Spesifik Berdasarkan CP Fase E & F) ---
+        const cpData = {
+            'B.Indonesia': {
+                'X': [
+                    { topik: "Teks Laporan Hasil Observasi", jp: 12, tp: "Menganalisis struktur dan kaidah kebahasaan teks LHO secara kritis." },
+                    { topik: "Teks Anekdot", jp: 12, tp: "Mengevaluasi makna tersirat dan kritik sosial dalam anekdot." },
+                    { topik: "Hikayat dan Cerpen", jp: 16, tp: "Membandingkan nilai-nilai dalam hikayat dengan kehidupan modern." },
+                    { topik: "Teks Negosiasi", jp: 12, tp: "Menyusun teks negosiasi tulis yang logis dan persuasif." },
+                    { topik: "Teks Biografi", jp: 12, tp: "Menelaah karakter unggul tokoh dalam teks biografi." },
+                    { topik: "Puisi Kontemporer", jp: 12, tp: "Mendemonstrasikan pembacaan puisi dengan ekspresi yang tepat." }
+                ],
+                'XI': [
+                    { topik: "Teks Argumentasi & Ketahanan Pangan", jp: 16, tp: "Menulis teks argumentasi berdasarkan fakta akurat." },
+                    { topik: "Teks Berita (Vlog/Video)", jp: 12, tp: "Menyajikan teks berita dalam bentuk vlog." },
+                    { topik: "Cerpen (Latar Sejarah)", jp: 16, tp: "Menganalisis cerpen berlatar belakang sejarah Indonesia." },
+                    { topik: "Karya Ilmiah", jp: 20, tp: "Menyusun proposal dan karya ilmiah sederhana sesuai kaidah." }
+                ],
+                'XII': [
+                    { topik: "Surat Lamaran Pekerjaan", jp: 12, tp: "Menulis surat lamaran dan CV yang efektif." },
+                    { topik: "Teks Editorial", jp: 16, tp: "Menyusun opini editorial menanggapi isu terkini." },
+                    { topik: "Novel (Apresiasi Sastra)", jp: 20, tp: "Menganalisis unsur intrinsik, ekstrinsik, dan nilai sosial novel." },
+                    { topik: "Artikel Ilmiah Populer", jp: 16, tp: "Mengonversi makalah menjadi artikel opini media massa." }
+                ]
+            },
+            'Matematika': {
+                'X': [
+                    { topik: "Eksponen dan Logaritma", jp: 16, tp: "Menyelesaikan masalah kontekstual berkaitan dengan eksponen dan logaritma." },
+                    { topik: "Barisan dan Deret Aritmetika", jp: 12, tp: "Menerapkan barisan aritmetika pada masalah bunga tunggal/majemuk." },
+                    { topik: "Barisan dan Deret Geometri", jp: 12, tp: "Menerapkan barisan geometri pada pertumbuhan dan peluruhan." },
+                    { topik: "Trigonometri Segitiga Siku-siku", jp: 16, tp: "Memecahkan masalah jarak dan tinggi menggunakan perbandingan trigonometri." },
+                    { topik: "Sistem Persamaan Linear Tiga Variabel", jp: 12, tp: "Menyelesaikan model matematika SPLTV dari masalah nyata." }
+                ],
+                'XI': [
+                    { topik: "Komposisi dan Invers Fungsi", jp: 16, tp: "Menganalisis operasi aljabar pada fungsi, komposisi, dan fungsi invers." },
+                    { topik: "Matriks (Determinan & Invers)", jp: 16, tp: "Menyelesaikan SPLDV menggunakan matriks." },
+                    { topik: "Persamaan Lingkaran", jp: 16, tp: "Menentukan persamaan lingkaran dan garis singgung lingkaran." },
+                    { topik: "Transformasi Geometri", jp: 16, tp: "Menganalisis sifat transformasi (translasi, refleksi, rotasi, dilatasi) matriks." }
+                ],
+                'XII': [
+                    { topik: "Geometri Ruang (Dimensi Tiga)", jp: 20, tp: "Menentukan jarak antar titik, titik ke garis, dan titik ke bidang." },
+                    { topik: "Statistika Data Berkelompok", jp: 20, tp: "Menganalisis ukuran pemusatan dan penyebaran data histogram." },
+                    { topik: "Kaidah Pencacahan", jp: 12, tp: "Menyelesaikan masalah permutasi dan kombinasi." },
+                    { topik: "Teori Peluang Kejadian Majemuk", jp: 12, tp: "Menganalisis kejadian saling lepas, bebas, dan bersyarat." }
+                ]
+            },
+            'Matematika Lanjut': {
+                'XI': [
+                    { topik: "Polinomial (Suku Banyak)", jp: 24, tp: "Menganalisis operasi, teorema sisa, dan teorema faktor polinomial." },
+                    { topik: "Irisan Kerucut (Parabola & Elips)", jp: 20, tp: "Menentukan persamaan irisan kerucut dengan puncaknya." },
+                    { topik: "Matriks Tingkat Lanjut", jp: 20, tp: "Menerapkan transformasi geometri kompleks menggunakan matriks ordo 3x3." }
+                ],
+                'XII': [
+                    { topik: "Limit Fungsi Aljabar & Trigonometri", jp: 24, tp: "Menyelesaikan limit fungsi di suatu titik dan di tak hingga." },
+                    { topik: "Turunan Fungsi Trigonometri", jp: 24, tp: "Menerapkan turunan untuk menentukan nilai maksimum/minimum." },
+                    { topik: "Integral Tentu dan Tak Tentu", jp: 24, tp: "Menerapkan integral untuk menghitung luas daerah dan volume benda putar." }
+                ]
+            },
+            'B.Inggris': {
+                'X': [
+                    { topik: "Descriptive Text (Place/Person)", jp: 12, tp: "Menyusun teks deskriptif lisan dan tulis yang padu." },
+                    { topik: "Recount Text (Experience)", jp: 12, tp: "Menceritakan kembali pengalaman masa lalu secara runtut." },
+                    { topik: "Narrative Text (Legends)", jp: 16, tp: "Menganalisis pesan moral dari naratif legenda Nusantara." },
+                    { topik: "Expository Text (Basic)", jp: 16, tp: "Menyatakan argumen logis terhadap isu lingkungan sekitar." }
+                ],
+                'XI': [
+                    { topik: "Asking & Giving Opinion", jp: 12, tp: "Mempertahankan opini dalam diskusi kelas berbahasa Inggris." },
+                    { topik: "Analytical Exposition", jp: 16, tp: "Menganalisis struktur tesis, argumen, dan reiterasi secara kritis." },
+                    { topik: "Personal Letter & Invitation", jp: 12, tp: "Menulis surat undangan resmi dan pribadi yang sopan." },
+                    { topik: "Cause and Effect Relationship", jp: 12, tp: "Menggunakan konjungsi sebab-akibat dengan akurat." }
+                ],
+                'XII': [
+                    { topik: "Job Application Letter & CV", jp: 16, tp: "Mempresentasikan lamaran kerja dalam simulasi wawancara." },
+                    { topik: "News Item Text", jp: 16, tp: "Meringkas berita aktual dari media berbahasa Inggris." },
+                    { topik: "Discussion Text", jp: 16, tp: "Menyajikan dua sudut pandang (Pro & Kontra) dalam debat." },
+                    { topik: "Procedure Text (Manual/Tips)", jp: 12, tp: "Mendemonstrasikan manual operasi alat teknologi mutakhir." }
+                ]
+            },
+            'B.Inggris Lanjut': {
+                'XI': [
+                    { topik: "Hortatory Exposition", jp: 20, tp: "Menganalisis dan menyusun teks persuasi yang berakhiran dengan rekomendasi." },
+                    { topik: "English Literature: Short Story", jp: 20, tp: "Menganalisis elemen sastra (plot, setting, character) cerita pendek klasik." },
+                    { topik: "Academic Presentation", jp: 24, tp: "Melakukan presentasi akademis berbasis riset mini (Mini Research)." }
+                ],
+                'XII': [
+                    { topik: "English Literature: Poetry", jp: 16, tp: "Menganalisis *figures of speech* dan rima dalam puisi berbahasa Inggris." },
+                    { topik: "Review Text (Movie/Book)", jp: 20, tp: "Menyusun kritik atau ulasan komprehensif terhadap film/buku." },
+                    { topik: "Advanced Discussion & Debate", jp: 28, tp: "Mengaplikasikan format debat parlementer (Asian/British Parliamentary)." }
+                ]
+            }
+        };
+
+        // Fungsi Helper untuk Fallback Data jika belum didefinisikan (Demo 22 Mapel)
+        function getSafeData(mapel, kelas) {
+            if (cpData[mapel] && cpData[mapel][kelas]) { 
+                let data = cpData[mapel][kelas];
+                // Hitung pertemuan otomatis = ceil(jp / 3) sebagai estimasi
+                return data.map(d => ({ ...d, pertemuan: Math.ceil(d.jp / 3) }));
+            }
+            // Fallback Data Generik untuk mapel lain agar tetap berjalan normal
+            let generic = [
+                { topik: `Konsep Dasar ${mapel} 1`, jp: 16, pertemuan: 5, tp: `Menganalisis prinsip dasar ${mapel} dalam kehidupan.` },
+                { topik: `Analisis Lanjutan ${mapel}`, jp: 20, pertemuan: 7, tp: `Mengevaluasi studi kasus terkait ${mapel} secara kritis.` },
+                { topik: `Praktik Terapan ${mapel}`, jp: 20, pertemuan: 7, tp: `Merancang proyek/solusi nyata berbasis ${mapel}.` },
+                { topik: `Evaluasi dan Refleksi ${mapel}`, jp: 16, pertemuan: 5, tp: `Menyimpulkan seluruh konsep ${mapel} Fase ini.` }
+            ];
+            return generic;
+        }
+
+        // --- STREAMING_CHUNK:Logika Navigasi Tab dan UI Dinamis ---
+        window.switchTab = function(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.className = 'tab-btn px-8 py-3 rounded-full font-bold transition-all duration-300 bg-white text-slate-600 shadow border border-slate-200 hover:bg-slate-50 hover:-translate-y-1');
+            document.getElementById(tabId).classList.remove('hidden');
+            const activeBtn = tabId === 'tab-pemetaan' ? 'btn-pemetaan' : 'btn-generator';
+            document.getElementById(activeBtn).className = 'tab-btn active px-8 py-3 rounded-full font-bold transition-all duration-300 bg-gradient-to-r from-accent to-primary text-white shadow-lg hover:-translate-y-1';
+            
+            // Generate Pilihan Mapel Pemetaan
+            if(document.getElementById('mapel-pemetaan').options.length <= 1) {
+                document.getElementById('mapel-pemetaan').innerHTML = document.getElementById('gen-mapel').innerHTML;
+            }
+        };
+
+        window.renderPemetaanDetail = function() {
+            const mapel = document.getElementById('mapel-pemetaan').value;
+            const res = document.getElementById('pemetaan-result');
+            if (!mapel) { res.classList.add('hidden'); return; }
+            let html = `<div class="bg-indigo-50 p-6 rounded-2xl mb-6"><h3 class="text-xl font-bold text-primary mb-2">Pemetaan ${mapel} (Fase E & F)</h3></div><div class="space-y-6">`;
+            ['X', 'XI', 'XII'].forEach(kelas => {
+                const dataMateri = getSafeData(mapel, kelas);
+                html += `<div class="bg-white rounded-2xl border border-slate-200 shadow-sm"><div class="bg-slate-100 px-5 py-4 border-b"><h4 class="font-bold text-slate-800">Kelas ${kelas}</h4></div><div class="p-5 space-y-4">`;
+                dataMateri.forEach(m => {
+                    html += `<div class="border-l-4 border-accent pl-4 py-1"><h5 class="font-bold">${m.topik}</h5><p class="text-sm text-primary mb-1">Total: ${m.jp} JP (${m.pertemuan} Pertemuan)</p><p class="text-sm bg-slate-50 p-2 rounded border"><strong>TP:</strong> ${m.tp}</p></div>`;
+                });
+                html += `</div></div>`;
+            });
+            html += `</div>`;
+            res.innerHTML = html;
+            res.classList.remove('hidden');
+        };
+
+        window.handleDocTypeChange = function() {
+            const jenisDoc = document.getElementById('gen-jenis-doc').value;
+            const container = document.getElementById('container-topik');
+            const modOpts = document.getElementById('modul-options');
+            
+            if (jenisDoc === 'Modul Ajar' || jenisDoc === 'Asesmen') { container.classList.remove('hidden'); updateTopikDropdown(); } 
+            else { container.classList.add('hidden'); }
+            
+            if (jenisDoc === 'Modul Ajar') { modOpts.classList.remove('hidden'); }
+            else { modOpts.classList.add('hidden'); }
+
+            updateDownloadButtonUI();
+        };
+
+        window.updateTopikDropdown = function() {
+            const mapel = document.getElementById('gen-mapel').value;
+            const kelas = document.getElementById('gen-kelas').value;
+            const dropdown = document.getElementById('gen-topik-pilih');
+            dropdown.innerHTML = '<option value="" disabled selected>-- Pilih Topik --</option>';
+            if (mapel && kelas) {
+                const dataMateri = getSafeData(mapel, kelas);
+                dataMateri.forEach((m, idx) => { dropdown.innerHTML += `<option value="${idx}">${m.topik}</option>`; });
+            }
+        };
+
+        window.fillTopikManual = function() {
+            const mapel = document.getElementById('gen-mapel').value;
+            const kelas = document.getElementById('gen-kelas').value;
+            const idx = document.getElementById('gen-topik-pilih').value;
+            if (mapel && kelas && idx !== "") {
+                const data = getSafeData(mapel, kelas)[idx];
+                document.getElementById('gen-topik').value = data.topik;
+                document.getElementById('gen-jp').value = data.jp;
+                document.getElementById('gen-pertemuan').value = data.pertemuan;
+                document.getElementById('gen-tp').value = data.tp;
+            }
+        };
+
+        window.updateDownloadButtonUI = function() {
+            const jenisDoc = document.getElementById('gen-jenis-doc').value;
+            const btnDynamic = document.getElementById('btn-dynamic-download');
+            if(jenisDoc === 'Modul Ajar' || jenisDoc === 'Asesmen') {
+                btnDynamic.innerHTML = '<i class="fas fa-file-word"></i> Unduh Word';
+                btnDynamic.className = 'text-xs font-semibold bg-blue-100 hover:bg-blue-200 text-blue-700 py-2 px-3 rounded-lg transition-colors flex items-center gap-1 shadow-sm';
+            } else if (jenisDoc) {
+                btnDynamic.innerHTML = '<i class="fas fa-file-excel"></i> Unduh Excel';
+                btnDynamic.className = 'text-xs font-semibold bg-green-100 hover:bg-green-200 text-green-700 py-2 px-3 rounded-lg transition-colors flex items-center gap-1 shadow-sm';
+            }
+        };
+
+        // --- STREAMING_CHUNK:Logika Komponen Kertas & Kop Surat ---
+        function getKopSurat() {
+            const prov = document.getElementById('provinsi').value || "PROVINSI SUMATERA UTARA";
+            const dinas = document.getElementById('dinas').value || "DINAS PENDIDIKAN";
+            const sek = document.getElementById('nama-sekolah').value || "SMA NEGERI 1 BANGUN PURBA";
+            const alamat = document.getElementById('alamat-sekolah').value || "Jln. Printis Kemerdekaan Bangun Purba 20581, 061-7989130";
+            const email = document.getElementById('email-sekolah').value || "smansabangunpurba@gmail.com";
+            
+            return `
+            <div style="text-align:center; border-bottom:3px solid black; padding-bottom:10px; margin-bottom:20px; line-height:1.2;">
+                <h3 style="margin:0; font-size:12pt; font-weight:normal;">PEMERINTAH ${prov.toUpperCase()}</h3>
+                <h3 style="margin:0; font-size:14pt; font-weight:bold;">${dinas.toUpperCase()}</h3>
+                <h2 style="margin:0; font-size:18pt; font-weight:bold; letter-spacing:1px;">${sek.toUpperCase()}</h2>
+                <p style="margin:0; font-size:10pt;">${alamat}</p>
+                <p style="margin:0; font-size:10pt;">Email: ${email}</p>
+            </div>`;
+        }
+
+        function getSignatureBlock() {
+            const tpt = document.getElementById('tempat').value || "Bangun Purba";
+            const kep = document.getElementById('nama-kepsek').value || "...................................";
+            const nkep = document.getElementById('nip-kepsek').value || "......................";
+            const gur = document.getElementById('nama-guru').value || "...................................";
+            const ngur = document.getElementById('nip-guru').value || "......................";
+            const bln = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"][new Date().getMonth()];
+            
+            return `
+            <br><br>
+            <div class="avoid-break">
+            <table class="no-border" style="width:100%; text-align:center; margin-top:20px; font-size:11pt;">
+                <tr>
+                    <td style="width:50%">Mengetahui,<br>Kepala Sekolah</td>
+                    <td style="width:50%">${tpt}, ${new Date().getDate()} ${bln} ${new Date().getFullYear()}<br>Guru Mata Pelajaran</td>
+                </tr>
+                <tr><td style="height:70px"></td><td style="height:70px"></td></tr>
+                <tr>
+                    <td><b><u>${kep}</u></b><br>NIP. ${nkep}</td>
+                    <td><b><u>${gur}</u></b><br>NIP. ${ngur}</td>
+                </tr>
+            </table>
+            </div>`;
+        }
+
+        // --- STREAMING_CHUNK:Mesin Utama Generator Dokumen Pembelajaran ---
+        window.generateModul = function() {
+            const jenisDoc = document.getElementById('gen-jenis-doc').value;
+            const mapel = document.getElementById('gen-mapel').value;
+            const kelas = document.getElementById('gen-kelas').value;
+            const smt = document.getElementById('gen-semester').value;
+            const tapel = document.getElementById('tahun-pelajaran').value;
+            const jpMinggu = parseInt(document.getElementById('gen-jp-minggu').value) || 4;
+            
+            if (!jenisDoc || !mapel || !kelas) { alert("Pilih Dokumen, Mapel, dan Kelas!"); return; }
+
+            const dataMateri = getSafeData(mapel, kelas);
+            
+            // Filter Materi Berdasarkan Semester untuk Prosem
+            const halfIndex = Math.ceil(dataMateri.length / 2);
+            let materiSemester = [];
+            if(smt === 'Ganjil') materiSemester = dataMateri.slice(0, halfIndex);
+            else materiSemester = dataMateri.slice(halfIndex);
+
+            let out = getKopSurat();
+
+            // ROUTER GENERATOR
+            if (jenisDoc === 'AME') out += generateAME(smt, jpMinggu);
+            else if (jenisDoc === 'Prota') out += generateProta(mapel, kelas, tapel, jpMinggu, dataMateri);
+            else if (jenisDoc === 'Prosem') out += generateProsem(mapel, kelas, smt, tapel, materiSemester, jpMinggu);
+            else if (jenisDoc === 'ATP') out += generateATP(mapel, kelas, dataMateri);
+            else if (jenisDoc === 'KKTP') out += generateKKTP(dataMateri);
+            else if (jenisDoc === 'Nilai') out += generateNilai(mapel, smt);
+            else if (jenisDoc === 'Asesmen') out += generateAsesmen(mapel);
+            else if (jenisDoc === 'Modul Ajar') out += routeModulAjar(mapel, kelas, smt, tapel, jpMinggu);
+
+            // Hide signature for Infografis
+            if (!(jenisDoc === 'Modul Ajar' && document.querySelector('input[name="modul_output"]:checked').value === 'infografis')) {
+                out += getSignatureBlock();
+            }
+
+            document.getElementById('output-modul').innerHTML = out;
+            updateDownloadButtonUI();
+        };
+
+        // --- STREAMING_CHUNK:Logika 4 Tabel Analisis Minggu Efektif (5 Hari Kerja) ---
+        function generateAME(smt, jpM) {
+            let totalMg = 0, tidakEfektif = 0, efektif = 0;
+            let bln = smt === 'Ganjil' ? ['Juli','Agustus','September','Oktober','November','Desember'] : ['Januari','Februari','Maret','April','Mei','Juni'];
+            
+            // Pemetaan Kaldik Kasar (5 hari)
+            let dataMg = [ 
+                { j:5, t:2, ket:"Libur Semester / MPLS" }, // Jul/Jan
+                { j:4, t:0, ket:"-" }, // Agu/Feb
+                { j:4, t:1, ket:"PTS / Jeda" }, // Sep/Mar
+                { j:5, t:0, ket:"-" }, // Okt/Apr
+                { j:4, t:0, ket:"-" }, // Nov/Mei
+                { j:4, t:3, ket:"PAS & Libur Akhir" }  // Des/Jun
+            ];
+
+            let html = `<h1 style="margin-bottom:0;">ANALISIS MINGGU EFEKTIF & HARI BELAJAR</h1><h2 style="text-align:center; margin-top:0;">SEMESTER ${smt.toUpperCase()}</h2>`;
+            
+            // Tabel 1: AME
+            html += `<h3>A. Analisis Minggu Efektif</h3><table><tr><th>No</th><th>Bulan</th><th>Jml Minggu</th><th>Tidak Efektif</th><th>Minggu Efektif</th><th>Keterangan</th></tr>`;
+            bln.forEach((b, i) => {
+                let e = dataMg[i].j - dataMg[i].t;
+                totalMg += dataMg[i].j; tidakEfektif += dataMg[i].t; efektif += e;
+                html += `<tr><td style="text-align:center;">${i+1}</td><td>${b}</td><td style="text-align:center;">${dataMg[i].j}</td><td style="text-align:center;">${dataMg[i].t}</td><td style="text-align:center; font-weight:bold;">${e}</td><td>${dataMg[i].ket}</td></tr>`;
+            });
+            html += `<tr style="font-weight:bold;"><td colspan="2" style="text-align:right;">JUMLAH</td><td style="text-align:center;">${totalMg}</td><td style="text-align:center;">${tidakEfektif}</td><td style="text-align:center;">${efektif}</td><td></td></tr></table>`;
+
+            // Tabel 2: Analisis Hari Belajar (Senin-Jumat)
+            html += `<h3>B. Analisis Hari Belajar Efektif (5 Hari Kerja)</h3><table><tr><th>No</th><th>Bulan</th><th>Senin</th><th>Selasa</th><th>Rabu</th><th>Kamis</th><th>Jum'at</th><th>Jumlah</th></tr>`;
+            let th = 0;
+            bln.forEach((b, i) => {
+                let e = dataMg[i].j - dataMg[i].t; // minggu efektif
+                html += `<tr><td style="text-align:center;">${i+1}</td><td>${b}</td><td style="text-align:center;">${e}</td><td style="text-align:center;">${e}</td><td style="text-align:center;">${e}</td><td style="text-align:center;">${e}</td><td style="text-align:center;">${e}</td><td style="text-align:center; font-weight:bold;">${e*5}</td></tr>`;
+                th += (e*5);
+            });
+            html += `<tr style="font-weight:bold;"><td colspan="7" style="text-align:right;">TOTAL HARI EFEKTIF</td><td style="text-align:center;">${th} Hari</td></tr></table>`;
+
+            // Tabel 3: Rekap Kegiatan
+            let totalJP = efektif * jpM;
+            html += `<h3>C. Rekapitulasi Distribusi Jam Pelajaran</h3><table><tr><th>Kegiatan Semester</th><th>Minggu Efektif</th><th>JP / Minggu</th><th>Jumlah JP</th></tr>`;
+            html += `<tr><td>Tatap Muka / Materi</td><td style="text-align:center;">${efektif - 3}</td><td style="text-align:center;">${jpM}</td><td style="text-align:center;">${(efektif-3)*jpM}</td></tr>`;
+            html += `<tr><td>Asesmen Formatif / Sumatif Harian</td><td style="text-align:center;">1</td><td style="text-align:center;">${jpM}</td><td style="text-align:center;">${jpM}</td></tr>`;
+            html += `<tr><td>Projek P5 / Cadangan / Remedial</td><td style="text-align:center;">2</td><td style="text-align:center;">${jpM}</td><td style="text-align:center;">${jpM*2}</td></tr>`;
+            html += `<tr style="font-weight:bold;"><td style="text-align:right;">TOTAL SATU SEMESTER</td><td style="text-align:center;">${efektif}</td><td style="text-align:center;">${jpM}</td><td style="text-align:center;">${totalJP} JP</td></tr></table>`;
+            
+            return html;
+        }
+
+        // --- STREAMING_CHUNK:Logika Program Tahunan (Format Rinci AME) ---
+        function generateProta(mapel, kelas, tapel, jpM, dataMateri) {
+            let html = `<h1 style="margin-bottom:0;">PROGRAM TAHUNAN (PROTA)</h1>`;
+            html += `<p><b>Mata Pelajaran:</b> ${mapel}<br><b>Fase/Kelas:</b> ${kelas}<br><b>Tahun Pelajaran:</b> ${tapel}</p>`;
+            
+            // Hitungan Asumsi 22 Minggu Ganjil, 20 Minggu Genap
+            let jpGanjil = 22 * jpM;
+            let jpGenap = 20 * jpM;
+
+            html += `<table><tr><th>Smt</th><th>No</th><th>Topik Pembelajaran</th><th>Tujuan Pembelajaran</th><th>JP</th></tr>`;
+            dataMateri.forEach((m, idx) => {
+                let smt = (idx < dataMateri.length/2) ? "1" : "2";
+                html += `<tr><td style="text-align:center;">${smt}</td><td style="text-align:center;">${idx+1}</td><td><b>${m.topik}</b></td><td>${m.tp}</td><td style="text-align:center; mso-number-format:'\@';">${m.jp} JP</td></tr>`;
+            });
+            html += `<tr style="background:#f1f5f9; font-weight:bold;"><td colspan="4" style="text-align:right;">TOTAL JP SEMESTER GANJIL</td><td style="text-align:center;">${jpGanjil} JP</td></tr>`;
+            html += `<tr style="background:#f1f5f9; font-weight:bold;"><td colspan="4" style="text-align:right;">TOTAL JP SEMESTER GENAP</td><td style="text-align:center;">${jpGenap} JP</td></tr>`;
+            html += `</table>`;
+            return html;
+        }
+
+        // --- STREAMING_CHUNK:Logika Program Semester (Auto-Skip Minggu Ujian/Libur) ---
+        function generateProsem(mapel, kelas, smt, tapel, materiSmt, jpM) {
+            let html = `<h1 style="margin-bottom:0;">PROGRAM SEMESTER (PROSEM)</h1>`;
+            html += `<p><b>Mata Pelajaran:</b> ${mapel} &nbsp;&nbsp;|&nbsp;&nbsp; <b>Fase/Kelas:</b> ${kelas} &nbsp;&nbsp;|&nbsp;&nbsp; <b>Smt:</b> ${smt}</p>`;
+            
+            let bln = smt === 'Ganjil' ? ['Juli','Agustus','September','Oktober','November','Desember'] : ['Januari','Februari','Maret','April','Mei','Juni'];
+            let weeksPerBulan = [5, 4, 4, 5, 4, 4]; // Total 26 kolom minggu
+            
+            // Label khusus untuk event non-efektif (Indeks kolom 0-25)
+            let skipCols = {};
+            if (smt === 'Ganjil') {
+                skipCols[0] = "MPLS"; skipCols[1] = "MPLS"; 
+                skipCols[12] = "PTS/STS"; // Sept M4
+                skipCols[23] = "PAS/SAS"; skipCols[24] = "LIBUR"; skipCols[25] = "LIBUR"; // Des M2,3,4
+            } else {
+                skipCols[0] = "LIBUR SMT"; skipCols[12] = "PTS/STS"; 
+                skipCols[23] = "PAT/SAT"; skipCols[24] = "LIBUR"; skipCols[25] = "LIBUR";
+            }
+
+            html += `<table><tr><th rowspan="2" style="width:30px;">No</th><th rowspan="2">Konten / Topik Pembelajaran</th><th rowspan="2" style="width:40px;">JP</th>`;
+            bln.forEach((b, i) => { html += `<th colspan="${weeksPerBulan[i]}">${b}</th>`; });
+            html += `</tr><tr>`;
+            bln.forEach((b, i) => { for(let w=1; w<=weeksPerBulan[i]; w++) { html += `<th>${w}</th>`; } });
+            html += `</tr>`;
+
+            // Proses Distribusi Centang berdasarkan JP Materi
+            let currentWeekIndex = 0;
+            
+            materiSmt.forEach((m, idx) => {
+                let requiredWeeks = Math.ceil(m.jp / jpM);
+                html += `<tr><td style="text-align:center;">${idx+1}</td><td>${m.topik}</td><td style="text-align:center; mso-number-format:'\@';">${m.jp}</td>`;
+                
+                for(let i=0; i<26; i++) {
+                    if (skipCols[i]) {
+                        // Jika kolom ini diblokir, tulis rowspan hanya jika ini baris pertama, atau skip <td> jika baris > 0
+                        if (idx === 0) {
+                            html += `<td rowspan="${materiSmt.length}" style="background:#fecaca; text-align:center; vertical-align:middle; padding:2px;"><div class="text-vertical" style="mso-rotate:90;">${skipCols[i]}</div></td>`;
+                        }
+                    } else {
+                        // Kolom Efektif: Cek apakah masih ada jatah minggu untuk materi ini
+                        if (currentWeekIndex <= i && requiredWeeks > 0) {
+                            html += `<td style="text-align:center; font-weight:bold; color:blue;">✓</td>`;
+                            requiredWeeks--;
+                            if (requiredWeeks === 0) currentWeekIndex = i + 1; // Pindah start index untuk materi selanjutnya
+                        } else {
+                            html += `<td></td>`;
+                        }
+                    }
+                }
+                html += `</tr>`;
+            });
+            html += `</table>`;
+            return html;
+        }
+
+        // --- STREAMING_CHUNK:Logika ATP, KKTP, Asesmen, Daftar Nilai ---
+        function generateATP(mapel, kelas, dataMateri) {
+            let html = `<h1>ALUR TUJUAN PEMBELAJARAN (ATP)</h1><p><b>Mapel:</b> ${mapel} | <b>Kelas:</b> ${kelas}</p>`;
+            html += `<table><tr><th>Topik</th><th>Tujuan Pembelajaran</th><th>Alur/Indikator Detail</th></tr>`;
+            dataMateri.forEach((m, i) => { html += `<tr><td><b>${m.topik}</b></td><td>${m.tp}</td><td>${i+1}.1 Mengidentifikasi ${m.topik}<br>${i+1}.2 Menganalisis masalah terkait<br>${i+1}.3 Menyajikan hasil</td></tr>`; });
+            html += `</table>`; return html;
+        }
+        function generateKKTP(data) {
+            let html = `<h1>KRITERIA KETERCAPAIAN (KKTP)</h1><table><tr><th>No</th><th>Tujuan Pembelajaran (TP)</th><th>Perlu Bimbingan (&lt;70)</th><th>Cukup (70-79)</th><th>Baik (80-89)</th><th>Sangat Baik (&gt;90)</th></tr>`;
+            data.forEach((m, i) => { html += `<tr><td style="text-align:center;">${i+1}</td><td>${m.tp}</td><td>Belum mampu</td><td>Mampu sebagian</td><td>Mampu utuh</td><td>Mampu & Mandiri</td></tr>`; });
+            html += `</table>`; return html;
+        }
+        function generateAsesmen(mapel) {
+            const topik = document.getElementById('gen-topik').value || "Materi Ujian";
+            let html = `<h1>RANCANGAN ASESMEN</h1><p><b>Topik:</b> ${topik} | <b>Mapel:</b> ${mapel}</p>`;
+            html += `<h2>Kisi-Kisi Soal</h2><table><tr><th>No</th><th>Indikator Soal</th><th>Bentuk Soal</th><th>Level Kognitif</th></tr>`;
+            html += `<tr><td style="text-align:center;">1</td><td>Siswa menjelaskan konsep dasar ${topik}</td><td>PG</td><td>C2 (Memahami)</td></tr>`;
+            html += `<tr><td style="text-align:center;">2</td><td>Siswa menganalisis studi kasus terkait ${topik}</td><td>Uraian</td><td>C4 (Menganalisis)</td></tr>`;
+            html += `<tr><td style="text-align:center;">3</td><td>Siswa menciptakan solusi adaptif dari materi</td><td>Proyek</td><td>C6 (Mencipta)</td></tr></table>`;
+            return html;
+        }
+        function generateNilai(mapel, smt) {
+            let html = `<h1>FORMAT DAFTAR NILAI</h1><p><b>Mapel:</b> ${mapel} | <b>Semester:</b> ${smt}</p>`;
+            html += `<table><tr><th rowspan="2">No</th><th rowspan="2">Nama Siswa</th><th colspan="3">Nilai Formatif (TP)</th><th rowspan="2">Nilai Sumatif (PTS/PAS)</th><th rowspan="2">Nilai Rapor Akhir</th></tr>`;
+            html += `<tr><th>TP 1</th><th>TP 2</th><th>TP 3</th></tr>`;
+            for(let i=1; i<=10; i++) { html += `<tr><td style="text-align:center;">${i}</td><td style="height:20px;"></td><td></td><td></td><td></td><td></td><td></td></tr>`; }
+            html += `</table>`; return html;
+        }
+
+        // --- STREAMING_CHUNK:Logika 3-in-1 Modul Ajar (RPP, LKPD, Infografis) ---
+        function routeModulAjar(mapel, kelas, smt, tapel, jpM) {
+            const outType = document.querySelector('input[name="modul_output"]:checked').value;
+            const topik = document.getElementById('gen-topik').value;
+            const tp = document.getElementById('gen-tp').value;
+            const sek = document.getElementById('nama-sekolah').value || "[Nama Sekolah]";
+            const gur = document.getElementById('nama-guru').value || "[Nama Guru]";
+            const jpTotal = document.getElementById('gen-jp').value || "12";
+            const meet = document.getElementById('gen-pertemuan').value || "4";
+            
+            if (!topik) { alert("Pilih Topik Materi terlebih dahulu!"); return getKopSurat(); }
+
+            if (outType === 'lkpd') return buildLKPD(mapel, kelas, topik, tp);
+            if (outType === 'infografis') return buildInfografis(mapel, kelas, topik, tp);
+            
+            // Format 1: RPP Modul Ajar Standar Kurikulum Merdeka
+            let out = `<h1>MODUL AJAR KURIKULUM MERDEKA</h1>`;
+            // I. INFORMASI UMUM
+            out += `<h2>I. INFORMASI UMUM</h2><table>`;
+            out += `<tr><td style="width:30%;"><b>A. Identitas Penyusun</b></td><td>${gur} (${sek}), Tahun ${tapel.split('/')[0]}</td></tr>`;
+            out += `<tr><td><b>B. Kompetensi Awal</b></td><td>Pemahaman dasar terkait ${topik}.</td></tr>`;
+            out += `<tr><td><b>C. Profil Pelajar Pancasila</b></td><td>Bernalar Kritis, Bergotong Royong, dan Mandiri.</td></tr>`;
+            out += `<tr><td><b>D. Sarana dan Prasarana</b></td><td>Laptop, Proyektor, LKPD, Video Kontekstual, dan Buku Siswa.</td></tr>`;
+            out += `<tr><td><b>E. Target Peserta Didik</b></td><td>Peserta didik reguler/tipikal kelas ${kelas}.</td></tr>`;
+            out += `<tr><td><b>F. Model Pembelajaran</b></td><td><i>Problem Based Learning (PBL)</i>.</td></tr>`;
+            out += `<tr><td><b>G. Alokasi Waktu</b></td><td>${jpTotal} JP (${meet} Pertemuan @ ${jpM} JP)</td></tr></table>`;
+
+            // II. KOMPONEN INTI
+            out += `<h2 class="page-break">II. KOMPONEN INTI</h2>`;
+            out += `<p><b>A. Tujuan Pembelajaran (TP)</b><br>${tp}</p>`;
+            out += `<p><b>B. Pemahaman Bermakna</b><br>Siswa mampu menerapkan <i>${topik}</i> dalam analisis dan pemecahan masalah di kehidupan nyata.</p>`;
+            out += `<p><b>C. Pertanyaan Pemantik</b><br>Bagaimana kaitan konsep <i>${topik}</i> dengan peristiwa yang sering kita amati di lingkungan sekitar kita?</p>`;
+            
+            out += `<p><b>D. Skenario Kegiatan Pembelajaran (Detail Per Pertemuan)</b></p>`;
+            
+            // Kalkulasi Waktu Matematis
+            let totalWaktu = jpM * 45; // Total waktu satu pertemuan (Misal 4x45 = 180 mnt)
+            let waktuInti = totalWaktu - 30; // Dikurangi Pendahuluan(15) dan Penutup(15)
+
+            for(let m = 1; m <= parseInt(meet); m++) {
+                let focusTitle = "", inti = "";
+                
+                if (m === 1) { 
+                    // Hitungan breakdown waktu Kegiatan Inti (Pasti berjumlah = waktuInti)
+                    let t1 = Math.round(waktuInti * 0.25); // 25% waktu untuk Orientasi
+                    let t2 = Math.round(waktuInti * 0.15); // 15% waktu untuk Organisasi
+                    let t3 = Math.round(waktuInti * 0.40); // 40% waktu untuk Eksplorasi
+                    let t4 = waktuInti - (t1 + t2 + t3);   // Sisa waktu untuk Diskusi (menghindari desimal)
+
+                    focusTitle = "Orientasi Masalah & Eksplorasi Awal";
+                    inti = `<ul style="list-style-type: none; padding-left: 0; margin-top: 5px;">
+                        <li style="margin-bottom:6px;"><b>(${t1} Menit) Orientasi Masalah:</b> Guru menayangkan video/gambar kontekstual yang relevan dengan <i>${topik}</i>. Meminta siswa memberikan tanggapan kritis terhadap fenomena tersebut.</li>
+                        <li style="margin-bottom:6px;"><b>(${t2} Menit) Pengorganisasian Belajar:</b> Guru membagi siswa ke dalam kelompok heterogen (4-5 orang) dan membagikan Lembar Kerja (LKPD).</li>
+                        <li style="margin-bottom:6px;"><b>(${t3} Menit) Eksplorasi Dasar:</b> Siswa secara kolaboratif mengumpulkan data dasar dari buku teks dan pencarian literatur internet untuk menjawab rumusan masalah di LKPD.</li>
+                        <li style="margin-bottom:6px;"><b>(${t4} Menit) Diskusi Kelompok Awal:</b> Siswa merumuskan hipotesis awal dan menyusun kerangka penyelesaian sementara.</li>
+                    </ul>`;
+                } else if (m === parseInt(meet)) { 
+                    let t1 = Math.round(waktuInti * 0.15); // 15% Finalisasi
+                    let t2 = Math.round(waktuInti * 0.50); // 50% Presentasi
+                    let t3 = Math.round(waktuInti * 0.20); // 20% Penguatan
+                    let t4 = waktuInti - (t1 + t2 + t3);   // 15% Asesmen
+
+                    focusTitle = "Presentasi Karya & Asesmen Sumatif Akhir";
+                    inti = `<ul style="list-style-type: none; padding-left: 0; margin-top: 5px;">
+                        <li style="margin-bottom:6px;"><b>(${t1} Menit) Finalisasi Laporan:</b> Kelompok mengecek ulang laporan karya/hasil diskusi sebelum dipresentasikan di depan kelas.</li>
+                        <li style="margin-bottom:6px;"><b>(${t2} Menit) Presentasi Kelompok:</b> Secara bergantian, kelompok mempresentasikan temuan akhir mereka (atau melalui metode <i>Gallery Walk</i>). Kelompok lain memberikan sanggahan/pertanyaan.</li>
+                        <li style="margin-bottom:6px;"><b>(${t3} Menit) Umpan Balik & Penguatan:</b> Guru memberikan apresiasi, meluruskan miskonsepsi (jika ada), dan memberikan penguatan konsep krusial terkait <i>${topik}</i>.</li>
+                        <li style="margin-bottom:6px;"><b>(${t4} Menit) Asesmen Sumatif:</b> Siswa kembali ke tempat duduk masing-masing dan mengerjakan tes kognitif akhir.</li>
+                    </ul>`;
+                } else { 
+                    let t1 = Math.round(waktuInti * 0.15); // 15% Review
+                    let t2 = Math.round(waktuInti * 0.40); // 40% Penyelidikan
+                    let t3 = Math.round(waktuInti * 0.25); // 25% Pengolahan Data
+                    let t4 = waktuInti - (t1 + t2 + t3);   // 20% Scaffolding Guru
+
+                    focusTitle = "Penyelidikan Mendalam, Pengolahan Data & Scaffolding";
+                    inti = `<ul style="list-style-type: none; padding-left: 0; margin-top: 5px;">
+                        <li style="margin-bottom:6px;"><b>(${t1} Menit) Review Progres:</b> Guru mengecek progres penyelesaian masalah dari setiap kelompok pada pertemuan sebelumnya.</li>
+                        <li style="margin-bottom:6px;"><b>(${t2} Menit) Penyelidikan Mendalam:</b> Kelompok menganalisis studi kasus lebih lanjut, membandingkan berbagai referensi, atau melakukan simulasi praktik ringan terkait <i>${topik}</i>.</li>
+                        <li style="margin-bottom:6px;"><b>(${t3} Menit) Pengolahan Data:</b> Siswa menyusun argumentasi dan membuat draf kesimpulan (bentuk PPT/Infografis/Makalah) untuk menjawab pertanyaan di LKPD.</li>
+                        <li style="margin-bottom:6px;"><b>(${t4} Menit) Pendampingan Guru (Scaffolding):</b> Guru berkeliling kelas memberikan bimbingan intensif bagi kelompok yang mengalami kesulitan analisis (penerapan pembelajaran berdiferensiasi proses).</li>
+                    </ul>`;
+                }
+                
+                out += `<div class="avoid-break" style="margin-bottom: 20px; padding:15px; border: 1px solid #cbd5e1; background-color: #f8fafc; border-radius:8px;">`;
+                out += `<h4 style="margin:0 0 10px 0; color: #1e293b; border-bottom: 2px solid #cbd5e1; padding-bottom: 8px;">Pertemuan Ke-${m} : ${focusTitle} (Total: ${totalWaktu} Menit)</h4>`;
+                
+                out += `<p style="margin-bottom: 5px;"><b>1. Pendahuluan (15 Menit)</b></p>
+                        <ul style="margin-top:0; padding-left:20px; margin-bottom: 12px;">
+                            <li>Salam, doa pembuka, presensi kehadiran, dan memastikan kesiapan fisik serta psikis siswa.</li>
+                            <li><b>Apersepsi:</b> Guru menanyakan kembali materi prasyarat yang relevan dengan bahasan <i>${topik}</i>.</li>
+                            <li>Menyampaikan Tujuan Pembelajaran, langkah kegiatan, dan teknik asesmen yang akan digunakan hari ini.</li>
+                        </ul>`;
+                        
+                out += `<p style="margin-bottom: 5px;"><b>2. Kegiatan Inti (${waktuInti} Menit)</b></p>
+                        ${inti}`;
+                        
+                out += `<p style="margin-bottom: 5px; margin-top: 12px;"><b>3. Penutup (15 Menit)</b></p>
+                        <ul style="margin-top:0; padding-left:20px; margin-bottom: 0;">
+                            <li><b>Refleksi:</b> Guru membimbing siswa menyimpulkan poin penting dari kegiatan hari ini (apa yang menantang dan apa yang telah dipahami).</li>
+                            <li>Memberikan penugasan mandiri terstruktur atau arahan bahan bacaan untuk pertemuan selanjutnya.</li>
+                            <li>Menutup pelajaran dengan doa dan salam.</li>
+                        </ul></div>`;
+            }
+
+            // III. LAMPIRAN
+            out += `<h2 class="page-break">III. LAMPIRAN</h2>`;
+            out += `<ul><li><b>Lembar Kerja Peserta Didik (LKPD):</b> (Cetak dengan merubah "Spesifikasi Cetak Modul" di menu aplikasi ini ke mode LKPD).</li>`;
+            out += `<li><b>Bahan Ajar / Rangkuman:</b> (Cetak menggunakan mode Poster Infografis di aplikasi ini).</li>`;
+            out += `<li><b>Pengayaan:</b> Analisis tingkat tinggi (HOTS) bagi siswa yang telah mencapai ketuntasan tujuan pembelajaran.</li>`;
+            out += `<li><b>Remedial:</b> Bimbingan intensif dan tutor sebaya bagi siswa yang memerlukan perbaikan pemahaman konsep <i>${topik}</i>.</li></ul>`;
+            
+            return out;
+        }
+
+        function buildLKPD(mapel, kelas, topik, tp) {
+            let out = `<h1 style="margin-bottom:5px;">LEMBAR KERJA PESERTA DIDIK (LKPD)</h1>`;
+            out += `<h3 style="text-align:center; margin-top:0;">Topik: ${topik.toUpperCase()}</h3>`;
+            out += `<div style="border:2px dashed #000; padding:10px; margin-bottom:20px;">
+                    <b>Nama Anggota Kelompok:</b><br>1. ....................<br>2. ....................<br>3. ....................<br>4. ....................
+                    </div>`;
+            out += `<h3>A. Tujuan Pembelajaran</h3><p>${tp}</p>`;
+            out += `<h3>B. Alat, Bahan, dan Media</h3><p>Buku tulis, Pena, Buku Cetak ${mapel} Fase ${kelas=='X'?'E':'F'}, Gawai/Internet (opsional).</p>`;
+            out += `<h3>C. Langkah Kerja / Instruksi</h3>`;
+            out += `<ol><li>Diskusikan bersama kelompok mengenai permasalahan terkait ${topik}.</li><li>Tuliskan hasil analisis kalian pada tabel di bawah ini.</li><li>Bersiaplah untuk mempresentasikan hasilnya di depan kelas!</li></ol>`;
+            out += `<h3>D. Hasil Analisis Kelompok</h3>`;
+            out += `<table><tr><th>No</th><th>Sub-Topik / Masalah Ditemukan</th><th>Hasil Analisis / Solusi Kelompok</th></tr>`;
+            for(let i=1; i<=4; i++) { out += `<tr><td style="text-align:center;">${i}</td><td style="height:60px;"></td><td></td></tr>`; }
+            out += `</table>`;
+            out += `<div style="margin-top:20px; padding:10px; border:1px solid #000;"><b>Kesimpulan Akhir:</b><br><br><br><br></div>`;
+            return out;
+        }
+
+        function buildInfografis(mapel, kelas, topik, tp) {
+            return `
+            <div style="background: linear-gradient(135deg, #1e3a8a, #3b82f6); color:white; padding:30px; border-radius:20px; font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; box-shadow:0 10px 30px rgba(0,0,0,0.3);">
+                <div style="text-align:center; border-bottom:2px solid rgba(255,255,255,0.3); padding-bottom:15px; margin-bottom:25px;">
+                    <span style="background:rgba(255,255,255,0.2); padding:5px 15px; border-radius:20px; font-size:10pt; text-transform:uppercase; letter-spacing:1px;">Modul Rangkuman Digital</span>
+                    <h1 style="font-size:28pt; margin:10px 0; color:#fff;">${topik}</h1>
+                    <p style="font-size:12pt; margin:0;">Mata Pelajaran ${mapel} - Kelas ${kelas}</p>
+                </div>
+                
+                <div style="background:white; color:#1e293b; padding:20px; border-radius:15px; margin-bottom:20px;">
+                    <h3 style="color:#2563eb; margin-top:0; border-left:4px solid #2563eb; padding-left:10px;">🎯 Target Belajar (Tujuan)</h3>
+                    <p style="font-size:12pt; font-weight:500;">${tp}</p>
+                </div>
+
+                <div style="display:flex; gap:20px; margin-bottom:20px;">
+                    <div style="flex:1; background:rgba(255,255,255,0.1); padding:20px; border-radius:15px;">
+                        <h3 style="margin-top:0;">🔑 Konsep Kunci</h3>
+                        <ul style="padding-left:20px; line-height:1.6;">
+                            <li>Definisi dan Karakteristik ${topik}.</li>
+                            <li>Unsur-unsur pembangun utama.</li>
+                            <li>Langkah-langkah penyelesaian/prosedur.</li>
+                        </ul>
+                    </div>
+                    <div flex:1; background:rgba(255,255,255,0.1); padding:20px; border-radius:15px;">
+                        <h3 style="margin-top:0;">💡 Penerapan (Aplikasi)</h3>
+                        <p style="line-height:1.6;">Memahami materi ini membantu kita memecahkan masalah praktis di dunia kerja dan kehidupan bermasyarakat, serta melatih nalar kritis (Profil Pelajar Pancasila).</p>
+                    </div>
+                </div>
+                
+                <div style="text-align:center; font-size:9pt; opacity:0.8; margin-top:20px;">
+                    <i>Dicetak secara otomatis melalui Pusat Generator Instrumen Ajar Kurikulum Merdeka</i>
+                </div>
+            </div>`;
+        }
+
+        // --- STREAMING_CHUNK:Logika Autentikasi dan Ekspor Dokumen Microsoft Office ---
+        let isLoggedIn = localStorage.getItem('isAuth') === 'true';
+        window.addEventListener('DOMContentLoaded', () => { updateAuthUI(); });
+
+        function updateAuthUI() {
+            const btn = document.getElementById('auth-btn');
+            if(isLoggedIn) { btn.innerHTML = '<i class="fas fa-sign-out-alt"></i> Logout Akun'; btn.classList.replace('text-slate-700', 'text-red-600'); } 
+            else { btn.innerHTML = '<i class="fas fa-lock"></i> Login Akses'; btn.classList.replace('text-red-600', 'text-slate-700'); }
+        }
+
+        window.toggleLoginModal = function(show) {
+            const modal = document.getElementById('login-modal');
+            if(show) { modal.classList.remove('hidden'); document.getElementById('login-error').classList.add('hidden'); }
+            else { modal.classList.add('hidden'); }
+        };
+        window.handleAuthClick = function() { if(isLoggedIn) { if(confirm("Logout? Akses unduh akan ditutup.")) { isLoggedIn=false; localStorage.removeItem('isAuth'); updateAuthUI(); } } else { toggleLoginModal(true); } };
+        
+        window.processLogin = function() {
+            if(document.getElementById('login-username').value === 'guru' && document.getElementById('login-password').value === 'merdeka2026') {
+                isLoggedIn = true; localStorage.setItem('isAuth','true'); updateAuthUI(); toggleLoginModal(false);
+                showToast("Akses Sistem Berhasil Dibuka!");
+            } else { document.getElementById('login-error').classList.remove('hidden'); }
+        };
+
+        window.copyOutput = function() { if(!isLoggedIn) return toggleLoginModal(true); navigator.clipboard.writeText(document.getElementById('output-modul').innerText); showToast("Dokumen disalin!"); };
+        window.downloadPDF = function() { if(!isLoggedIn) return toggleLoginModal(true); const el = document.getElementById('output-modul'); const doc = document.getElementById('gen-jenis-doc').value || 'Dokumen'; html2pdf().set({ margin: 15, filename: `${doc}.pdf`, jsPDF: { orientation: (doc==='Prosem'||doc==='Nilai')?'landscape':'portrait' } }).from(el).save(); };
+
+        window.triggerDynamicDownload = function() {
+            if(!isLoggedIn) return toggleLoginModal(true);
+            const jenisDoc = document.getElementById('gen-jenis-doc').value;
+            if(jenisDoc === 'Modul Ajar' || jenisDoc === 'Asesmen') downloadNativeWord(jenisDoc);
+            else downloadNativeExcel(jenisDoc);
+        };
+
+        function downloadNativeWord(docName) {
+            const content = document.getElementById('output-modul').innerHTML;
+            const html = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='utf-8'><style>@page WordSection1 {size: 21cm 29.7cm; margin: 2.5cm;} div.WordSection1 { page: WordSection1; } body {font-family: 'Times New Roman', serif; font-size: 12pt; text-align: justify;} h1 {font-size: 14pt; text-align: center;} table {width: 100%; border-collapse: collapse;} td, th {border: 1px solid black; padding: 6px; vertical-align: top;} .no-border, .no-border td {border: none !important;} .page-break {page-break-before: always;} .avoid-break {page-break-inside: avoid;}</style></head><body><div class="WordSection1">${content}</div></body></html>`;
+            const blob = new Blob(['\ufeff', html], { type: 'application/msword' });
+            const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = `${docName}.doc`; link.click();
+        }
+
+        function downloadNativeExcel(docName) {
+            const content = document.getElementById('output-modul').innerHTML;
+            const html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><style>body {font-family: 'Arial', sans-serif; font-size: 11pt;} table {border-collapse: collapse;} td, th {border: 1px solid black; padding: 5px; mso-number-format:"\@";} .no-border, .no-border td {border: none !important;} .text-vertical {mso-rotate: 90;}</style><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>${docName}</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--></head><body>${content}</body></html>`;
+            const blob = new Blob(['\ufeff', html], { type: 'application/vnd.ms-excel' });
+            const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = `${docName}.xls`; link.click();
+        }
+    </script>
+</body>
+</html>
