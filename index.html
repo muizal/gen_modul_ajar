@@ -8,6 +8,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="/data/cp-data.js"></script>
     <script>
         tailwind.config = {
             theme: {
@@ -305,112 +306,35 @@
             if (!isLoggedIn) { e.preventDefault(); showToast("Gunakan tombol Salin resmi setelah Login."); return false; }
         });
 
-        // --- 1. DATABASE MATERI (Sangat Spesifik Berdasarkan CP Fase E & F) ---
-        const cpData = {
-            'B.Indonesia': {
-                'X': [
-                    { topik: "Teks Laporan Hasil Observasi", jp: 12, tp: "Menganalisis struktur dan kaidah kebahasaan teks LHO secara kritis." },
-                    { topik: "Teks Anekdot", jp: 12, tp: "Mengevaluasi makna tersirat dan kritik sosial dalam anekdot." },
-                    { topik: "Hikayat dan Cerpen", jp: 16, tp: "Membandingkan nilai-nilai dalam hikayat dengan kehidupan modern." },
-                    { topik: "Teks Negosiasi", jp: 12, tp: "Menyusun teks negosiasi tulis yang logis dan persuasif." },
-                    { topik: "Teks Biografi", jp: 12, tp: "Menelaah karakter unggul tokoh dalam teks biografi." },
-                    { topik: "Puisi Kontemporer", jp: 12, tp: "Mendemonstrasikan pembacaan puisi dengan ekspresi yang tepat." }
-                ],
-                'XI': [
-                    { topik: "Teks Argumentasi & Ketahanan Pangan", jp: 16, tp: "Menulis teks argumentasi berdasarkan fakta akurat." },
-                    { topik: "Teks Berita (Vlog/Video)", jp: 12, tp: "Menyajikan teks berita dalam bentuk vlog." },
-                    { topik: "Cerpen (Latar Sejarah)", jp: 16, tp: "Menganalisis cerpen berlatar belakang sejarah Indonesia." },
-                    { topik: "Karya Ilmiah", jp: 20, tp: "Menyusun proposal dan karya ilmiah sederhana sesuai kaidah." }
-                ],
-                'XII': [
-                    { topik: "Surat Lamaran Pekerjaan", jp: 12, tp: "Menulis surat lamaran dan CV yang efektif." },
-                    { topik: "Teks Editorial", jp: 16, tp: "Menyusun opini editorial menanggapi isu terkini." },
-                    { topik: "Novel (Apresiasi Sastra)", jp: 20, tp: "Menganalisis unsur intrinsik, ekstrinsik, dan nilai sosial novel." },
-                    { topik: "Artikel Ilmiah Populer", jp: 16, tp: "Mengonversi makalah menjadi artikel opini media massa." }
-                ]
-            },
-            'Matematika': {
-                'X': [
-                    { topik: "Eksponen dan Logaritma", jp: 16, tp: "Menyelesaikan masalah kontekstual berkaitan dengan eksponen dan logaritma." },
-                    { topik: "Barisan dan Deret Aritmetika", jp: 12, tp: "Menerapkan barisan aritmetika pada masalah bunga tunggal/majemuk." },
-                    { topik: "Barisan dan Deret Geometri", jp: 12, tp: "Menerapkan barisan geometri pada pertumbuhan dan peluruhan." },
-                    { topik: "Trigonometri Segitiga Siku-siku", jp: 16, tp: "Memecahkan masalah jarak dan tinggi menggunakan perbandingan trigonometri." },
-                    { topik: "Sistem Persamaan Linear Tiga Variabel", jp: 12, tp: "Menyelesaikan model matematika SPLTV dari masalah nyata." }
-                ],
-                'XI': [
-                    { topik: "Komposisi dan Invers Fungsi", jp: 16, tp: "Menganalisis operasi aljabar pada fungsi, komposisi, dan fungsi invers." },
-                    { topik: "Matriks (Determinan & Invers)", jp: 16, tp: "Menyelesaikan SPLDV menggunakan matriks." },
-                    { topik: "Persamaan Lingkaran", jp: 16, tp: "Menentukan persamaan lingkaran dan garis singgung lingkaran." },
-                    { topik: "Transformasi Geometri", jp: 16, tp: "Menganalisis sifat transformasi (translasi, refleksi, rotasi, dilatasi) matriks." }
-                ],
-                'XII': [
-                    { topik: "Geometri Ruang (Dimensi Tiga)", jp: 20, tp: "Menentukan jarak antar titik, titik ke garis, dan titik ke bidang." },
-                    { topik: "Statistika Data Berkelompok", jp: 20, tp: "Menganalisis ukuran pemusatan dan penyebaran data histogram." },
-                    { topik: "Kaidah Pencacahan", jp: 12, tp: "Menyelesaikan masalah permutasi dan kombinasi." },
-                    { topik: "Teori Peluang Kejadian Majemuk", jp: 12, tp: "Menganalisis kejadian saling lepas, bebas, dan bersyarat." }
-                ]
-            },
-            'Matematika Lanjut': {
-                'XI': [
-                    { topik: "Polinomial (Suku Banyak)", jp: 24, tp: "Menganalisis operasi, teorema sisa, dan teorema faktor polinomial." },
-                    { topik: "Irisan Kerucut (Parabola & Elips)", jp: 20, tp: "Menentukan persamaan irisan kerucut dengan puncaknya." },
-                    { topik: "Matriks Tingkat Lanjut", jp: 20, tp: "Menerapkan transformasi geometri kompleks menggunakan matriks ordo 3x3." }
-                ],
-                'XII': [
-                    { topik: "Limit Fungsi Aljabar & Trigonometri", jp: 24, tp: "Menyelesaikan limit fungsi di suatu titik dan di tak hingga." },
-                    { topik: "Turunan Fungsi Trigonometri", jp: 24, tp: "Menerapkan turunan untuk menentukan nilai maksimum/minimum." },
-                    { topik: "Integral Tentu dan Tak Tentu", jp: 24, tp: "Menerapkan integral untuk menghitung luas daerah dan volume benda putar." }
-                ]
-            },
-            'B.Inggris': {
-                'X': [
-                    { topik: "Descriptive Text (Place/Person)", jp: 12, tp: "Menyusun teks deskriptif lisan dan tulis yang padu." },
-                    { topik: "Recount Text (Experience)", jp: 12, tp: "Menceritakan kembali pengalaman masa lalu secara runtut." },
-                    { topik: "Narrative Text (Legends)", jp: 16, tp: "Menganalisis pesan moral dari naratif legenda Nusantara." },
-                    { topik: "Expository Text (Basic)", jp: 16, tp: "Menyatakan argumen logis terhadap isu lingkungan sekitar." }
-                ],
-                'XI': [
-                    { topik: "Asking & Giving Opinion", jp: 12, tp: "Mempertahankan opini dalam diskusi kelas berbahasa Inggris." },
-                    { topik: "Analytical Exposition", jp: 16, tp: "Menganalisis struktur tesis, argumen, dan reiterasi secara kritis." },
-                    { topik: "Personal Letter & Invitation", jp: 12, tp: "Menulis surat undangan resmi dan pribadi yang sopan." },
-                    { topik: "Cause and Effect Relationship", jp: 12, tp: "Menggunakan konjungsi sebab-akibat dengan akurat." }
-                ],
-                'XII': [
-                    { topik: "Job Application Letter & CV", jp: 16, tp: "Mempresentasikan lamaran kerja dalam simulasi wawancara." },
-                    { topik: "News Item Text", jp: 16, tp: "Meringkas berita aktual dari media berbahasa Inggris." },
-                    { topik: "Discussion Text", jp: 16, tp: "Menyajikan dua sudut pandang (Pro & Kontra) dalam debat." },
-                    { topik: "Procedure Text (Manual/Tips)", jp: 12, tp: "Mendemonstrasikan manual operasi alat teknologi mutakhir." }
-                ]
-            },
-            'B.Inggris Lanjut': {
-                'XI': [
-                    { topik: "Hortatory Exposition", jp: 20, tp: "Menganalisis dan menyusun teks persuasi yang berakhiran dengan rekomendasi." },
-                    { topik: "English Literature: Short Story", jp: 20, tp: "Menganalisis elemen sastra (plot, setting, character) cerita pendek klasik." },
-                    { topik: "Academic Presentation", jp: 24, tp: "Melakukan presentasi akademis berbasis riset mini (Mini Research)." }
-                ],
-                'XII': [
-                    { topik: "English Literature: Poetry", jp: 16, tp: "Menganalisis *figures of speech* dan rima dalam puisi berbahasa Inggris." },
-                    { topik: "Review Text (Movie/Book)", jp: 20, tp: "Menyusun kritik atau ulasan komprehensif terhadap film/buku." },
-                    { topik: "Advanced Discussion & Debate", jp: 28, tp: "Mengaplikasikan format debat parlementer (Asian/British Parliamentary)." }
-                ]
-            }
-        };
+        // --- 1. DATA CP & PEMETAAN MATERI ---
+        // Data Capaian Pembelajaran (CP) dan pemetaan materi di-load dari /data/cp-data.js.
+        // Aplikasi khusus SMA: Kelas X = Fase E, Kelas XI = Fase F, Kelas XII = Fase F.
 
-        // Fungsi Helper untuk Fallback Data jika belum didefinisikan (Demo 22 Mapel)
-        function getSafeData(mapel, kelas) {
-            if (cpData[mapel] && cpData[mapel][kelas]) { 
-                let data = cpData[mapel][kelas];
-                // Hitung pertemuan otomatis = ceil(jp / 3) sebagai estimasi
-                return data.map(d => ({ ...d, pertemuan: Math.ceil(d.jp / 3) }));
+        function getPhaseFromClass(kelas) {
+            if (kelas === 'X') return 'E';
+            if (kelas === 'XI' || kelas === 'XII') return 'F';
+            return '';
+        }
+
+        function getCPData(mapel, fase) {
+            if (!mapel || !fase) return null;
+            if (window.cpData && window.cpData[mapel] && window.cpData[mapel][fase]) {
+                return window.cpData[mapel][fase];
             }
-            // Fallback Data Generik untuk mapel lain agar tetap berjalan normal
-            let generic = [
-                { topik: `Konsep Dasar ${mapel} 1`, jp: 16, pertemuan: 5, tp: `Menganalisis prinsip dasar ${mapel} dalam kehidupan.` },
-                { topik: `Analisis Lanjutan ${mapel}`, jp: 20, pertemuan: 7, tp: `Mengevaluasi studi kasus terkait ${mapel} secara kritis.` },
-                { topik: `Praktik Terapan ${mapel}`, jp: 20, pertemuan: 7, tp: `Merancang proyek/solusi nyata berbasis ${mapel}.` },
-                { topik: `Evaluasi dan Refleksi ${mapel}`, jp: 16, pertemuan: 5, tp: `Menyimpulkan seluruh konsep ${mapel} Fase ini.` }
-            ];
-            return generic;
+            return null;
+        }
+
+        function hasCPData(mapel, fase) {
+            const data = getCPData(mapel, fase);
+            return !!(data && data.cp && data.cp.trim() !== "");
+        }
+
+        function getCurriculumData(mapel, kelas) {
+            const fase = getPhaseFromClass(kelas);
+            if (!fase) return [];
+            const cp = getCPData(mapel, fase);
+            if (!cp || !cp.curriculumMap || !cp.curriculumMap[kelas]) return [];
+            return cp.curriculumMap[kelas];
         }
 
         // --- STREAMING_CHUNK:Logika Navigasi Tab dan UI Dinamis ---
@@ -431,13 +355,41 @@
             const mapel = document.getElementById('mapel-pemetaan').value;
             const res = document.getElementById('pemetaan-result');
             if (!mapel) { res.classList.add('hidden'); return; }
-            let html = `<div class="bg-indigo-50 p-6 rounded-2xl mb-6"><h3 class="text-xl font-bold text-primary mb-2">Pemetaan ${mapel} (Fase E & F)</h3></div><div class="space-y-6">`;
+
+            const faseE = getCPData(mapel, 'E');
+            const faseF = getCPData(mapel, 'F');
+            const cpE = hasCPData(mapel, 'E');
+            const cpF = hasCPData(mapel, 'F');
+            const cpInfo = (data, cpAvailable, label) => {
+                if (!data) return `<div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm"><h4 class="font-bold text-slate-800 mb-2">Fase ${label}</h4><p class="text-sm text-red-600">Data Capaian Pembelajaran untuk mata pelajaran dan fase ini belum tersedia. Silakan hubungi administrator.</p></div>`;
+                let sumber = '';
+                if (data.source && (data.source.regulation || data.source.number || data.source.year)) {
+                    sumber = `<p class="text-xs text-slate-500 mt-1"><strong>Sumber:</strong> ${data.source.regulation} ${data.source.number} ${data.source.year}</p>`;
+                }
+                if (!cpAvailable) {
+                    return `<div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm"><h4 class="font-bold text-slate-800 mb-2">Fase ${label}</h4><p class="text-sm text-red-600">CP resmi belum tersedia.</p>${sumber}</div>`;
+                }
+                let elementsHtml = '';
+                if (data.elements && data.elements.length > 0) {
+                    elementsHtml = `<ul class="list-disc ml-5 mt-2 text-sm text-slate-700">${data.elements.map(e => `<li>${e}</li>`).join('')}</ul>`;
+                }
+                return `<div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm"><h4 class="font-bold text-slate-800 mb-2">Fase ${label}</h4><p class="text-sm text-slate-700"><strong>CP:</strong> ${data.cp || '-'}</p>${elementsHtml}${sumber}</div>`;
+            };
+
+            let html = `<div class="bg-indigo-50 p-6 rounded-2xl mb-6"><h3 class="text-xl font-bold text-primary mb-2">Pemetaan ${mapel} (Fase E & F)</h3><p class="text-sm text-slate-600">Kelas X = Fase E | Kelas XI & XII = Fase F</p></div>`;
+            html += `<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">${cpInfo(faseE, cpE, 'E')}${cpInfo(faseF, cpF, 'F')}</div>`;
+            html += `<div class="space-y-6">`;
             ['X', 'XI', 'XII'].forEach(kelas => {
-                const dataMateri = getSafeData(mapel, kelas);
-                html += `<div class="bg-white rounded-2xl border border-slate-200 shadow-sm"><div class="bg-slate-100 px-5 py-4 border-b"><h4 class="font-bold text-slate-800">Kelas ${kelas}</h4></div><div class="p-5 space-y-4">`;
-                dataMateri.forEach(m => {
-                    html += `<div class="border-l-4 border-accent pl-4 py-1"><h5 class="font-bold">${m.topik}</h5><p class="text-sm text-primary mb-1">Total: ${m.jp} JP (${m.pertemuan} Pertemuan)</p><p class="text-sm bg-slate-50 p-2 rounded border"><strong>TP:</strong> ${m.tp}</p></div>`;
-                });
+                const fase = getPhaseFromClass(kelas);
+                const dataMateri = getCurriculumData(mapel, kelas);
+                html += `<div class="bg-white rounded-2xl border border-slate-200 shadow-sm"><div class="bg-slate-100 px-5 py-4 border-b"><h4 class="font-bold text-slate-800">Kelas ${kelas} (Fase ${fase})</h4></div><div class="p-5 space-y-4">`;
+                if (dataMateri.length === 0) {
+                    html += `<p class="text-sm text-red-600">Pemetaan materi untuk kelas ini belum tersedia.</p>`;
+                } else {
+                    dataMateri.forEach(m => {
+                        html += `<div class="border-l-4 border-accent pl-4 py-1"><h5 class="font-bold">${m.topik}</h5><p class="text-sm text-primary mb-1">Total: ${m.jp} JP (${m.pertemuan} Pertemuan)</p><p class="text-sm bg-slate-50 p-2 rounded border"><strong>TP:</strong> ${m.tp}</p></div>`;
+                    });
+                }
                 html += `</div></div>`;
             });
             html += `</div>`;
@@ -465,7 +417,7 @@
             const dropdown = document.getElementById('gen-topik-pilih');
             dropdown.innerHTML = '<option value="" disabled selected>-- Pilih Topik --</option>';
             if (mapel && kelas) {
-                const dataMateri = getSafeData(mapel, kelas);
+                const dataMateri = getCurriculumData(mapel, kelas);
                 dataMateri.forEach((m, idx) => { dropdown.innerHTML += `<option value="${idx}">${m.topik}</option>`; });
             }
         };
@@ -475,11 +427,14 @@
             const kelas = document.getElementById('gen-kelas').value;
             const idx = document.getElementById('gen-topik-pilih').value;
             if (mapel && kelas && idx !== "") {
-                const data = getSafeData(mapel, kelas)[idx];
-                document.getElementById('gen-topik').value = data.topik;
-                document.getElementById('gen-jp').value = data.jp;
-                document.getElementById('gen-pertemuan').value = data.pertemuan;
-                document.getElementById('gen-tp').value = data.tp;
+                const dataMateri = getCurriculumData(mapel, kelas);
+                const data = dataMateri[idx];
+                if (data) {
+                    document.getElementById('gen-topik').value = data.topik;
+                    document.getElementById('gen-jp').value = data.jp;
+                    document.getElementById('gen-pertemuan').value = data.pertemuan;
+                    document.getElementById('gen-tp').value = data.tp;
+                }
             }
         };
 
@@ -546,10 +501,17 @@
             const smt = document.getElementById('gen-semester').value;
             const tapel = document.getElementById('tahun-pelajaran').value;
             const jpMinggu = parseInt(document.getElementById('gen-jp-minggu').value) || 4;
+            const fase = getPhaseFromClass(kelas);
             
             if (!jenisDoc || !mapel || !kelas) { alert("Pilih Dokumen, Mapel, dan Kelas!"); return; }
+            if (!fase) { alert("Kelas tidak valid!"); return; }
+            if (!hasCPData(mapel, fase)) { alert("CP resmi untuk mata pelajaran dan fase ini belum tersedia."); return; }
 
-            const dataMateri = getSafeData(mapel, kelas);
+            const dataMateri = getCurriculumData(mapel, kelas);
+
+            if ((jenisDoc === 'Modul Ajar' || jenisDoc === 'Asesmen') && dataMateri.length === 0) {
+                alert("Topik materi tidak tersedia untuk mata pelajaran dan kelas ini."); return;
+            }
             
             // Filter Materi Berdasarkan Semester untuk Prosem
             const halfIndex = Math.ceil(dataMateri.length / 2);

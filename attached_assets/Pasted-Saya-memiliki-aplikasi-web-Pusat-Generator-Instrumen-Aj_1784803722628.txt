@@ -1,0 +1,611 @@
+Saya memiliki aplikasi web "Pusat Generator Instrumen Ajar SMA" yang sudah berjalan di Replit. Aplikasi saat ini sebagian besar berada dalam `index.html`.
+
+Saya ingin mengembangkan aplikasi ini secara BERTAHAP dan HEMAT KREDIT REPLIT.
+
+PRINSIP UTAMA:
+JANGAN MEMBUAT ULANG PROJECT.
+JANGAN REDESIGN UI.
+JANGAN MENGUBAH FITUR YANG SUDAH BERFUNGSI jika tidak diperlukan.
+JANGAN menambahkan framework/library besar.
+JANGAN membuat backend atau integrasi AI pada tahap ini.
+
+Lakukan hanya perubahan yang diminta di bawah.
+
+# TUJUAN
+
+Tahap ini bertujuan mempersiapkan aplikasi agar:
+
+1. Khusus untuk jenjang SMA.
+2. Kelas hanya X, XI, XII.
+3. CP resmi menjadi sumber utama dokumen.
+4. Sistem tidak pernah membuat CP palsu/fallback.
+5. Data CP dipisahkan dari `index.html`.
+6. Struktur siap dikembangkan menjadi generator dokumen berbasis AI pada tahap berikutnya.
+
+# 1. PERTAHANKAN UI
+
+Pertahankan tampilan aplikasi saat ini.
+
+Jangan mengubah:
+
+* warna
+* layout
+* Tailwind
+* typography
+* tab
+* form
+* preview dokumen
+* tombol
+* modal login
+* struktur visual
+
+Jangan rebuild frontend.
+
+# 2. APLIKASI KHUSUS SMA
+
+Pastikan aplikasi hanya menggunakan:
+
+Kelas X = Fase E
+Kelas XI = Fase F
+Kelas XII = Fase F
+
+Tambahkan helper:
+
+function getPhaseFromClass(kelas)
+
+dengan hasil:
+
+X → E
+XI → F
+XII → F
+
+Jangan membuat jenjang SD, SMP, SMK, atau jenjang lainnya.
+
+# 3. HAPUS FALLBACK DATA PALSU
+
+Cari fungsi:
+
+getSafeData(mapel, kelas)
+
+Saat ini fungsi tersebut menghasilkan fallback generik ketika data tidak ditemukan, misalnya:
+
+"Konsep Dasar..."
+"Analisis Lanjutan..."
+"Praktik Terapan..."
+"Evaluasi dan Refleksi..."
+
+HAPUS mekanisme tersebut.
+
+Sistem DILARANG membuat:
+
+* CP palsu
+* TP palsu
+* materi palsu
+* topik generik
+* kompetensi generik
+
+Jika data tidak tersedia, return array kosong.
+
+Contoh:
+
+return [];
+
+# 4. TAMPILKAN ERROR JIKA CP TIDAK ADA
+
+Jika CP untuk mapel/fase belum tersedia, jangan menghasilkan dokumen.
+
+Tampilkan pesan:
+
+"Data Capaian Pembelajaran untuk mata pelajaran dan fase ini belum tersedia. Silakan hubungi administrator."
+
+Gunakan toast/modal/alert yang sudah tersedia.
+
+Jangan membuat data pengganti.
+
+# 5. PISAHKAN DATA CP DARI INDEX.HTML
+
+Saat ini terdapat:
+
+const cpData = {...}
+
+di dalam `index.html`.
+
+Pindahkan data tersebut ke:
+
+/data/cp-data.js
+
+Gunakan:
+
+window.cpData = {...};
+
+atau mekanisme sederhana yang kompatibel dengan struktur aplikasi saat ini.
+
+Load file tersebut sebelum JavaScript utama aplikasi:
+
+<script src="/data/cp-data.js"></script>
+
+Jangan membuat database pada tahap ini.
+
+Tujuannya hanya memisahkan DATA dari LOGIKA aplikasi.
+
+# 6. SIAPKAN STRUKTUR DATA CP
+
+CP harus disimpan berdasarkan:
+
+Mata Pelajaran + Fase
+
+BUKAN:
+
+Mata Pelajaran + Kelas
+
+Karena:
+
+Kelas X → Fase E
+Kelas XI dan XII → Fase F
+
+Gunakan struktur yang mudah dikembangkan seperti:
+
+window.cpData = {
+
+"B.Inggris": {
+
+```
+"E": {
+  mapel: "Bahasa Inggris",
+  fase: "E",
+
+  source: {
+    regulation: "",
+    number: "",
+    year: "",
+    status: "active"
+  },
+
+  cp: "",
+
+  elements: [],
+
+  curriculumMap: {
+    X: []
+  }
+},
+
+"F": {
+  mapel: "Bahasa Inggris",
+  fase: "F",
+
+  source: {
+    regulation: "",
+    number: "",
+    year: "",
+    status: "active"
+  },
+
+  cp: "",
+
+  elements: [],
+
+  curriculumMap: {
+    XI: [],
+    XII: []
+  }
+}
+```
+
+}
+};
+
+CATATAN PENTING:
+
+Jangan mengarang isi CP resmi.
+
+Jangan mengarang nomor regulasi.
+
+Jangan mengarang sumber.
+
+Jika belum ada data resmi gunakan:
+
+cp: ""
+
+elements: []
+
+regulation: ""
+
+number: ""
+
+year: ""
+
+# 7. BEDAKAN CP DAN PEMETAAN MATERI
+
+CP adalah kompetensi resmi berdasarkan Fase.
+
+Sedangkan:
+
+* TP
+* materi
+* topik
+* JP
+* jumlah pertemuan
+
+merupakan pemetaan pembelajaran.
+
+Simpan pemetaan tersebut dalam:
+
+curriculumMap
+
+Contoh:
+
+curriculumMap: {
+
+XI: [
+{
+topik: "...",
+tp: "...",
+jp: 12,
+pertemuan: 4
+}
+],
+
+XII: []
+}
+
+Dengan demikian CP Fase F dapat digunakan oleh kelas XI dan XII tetapi materi keduanya dapat berbeda.
+
+# 8. BUAT HELPER CP
+
+Buat fungsi:
+
+getCPData(mapel, fase)
+
+Fungsi hanya mengambil CP yang tersedia.
+
+Tidak boleh membuat fallback.
+
+Buat:
+
+hasCPData(mapel, fase)
+
+Return boolean.
+
+Contoh konsep:
+
+function hasCPData(mapel, fase) {
+
+```
+const data = getCPData(mapel, fase);
+
+return !!(
+    data &&
+    data.cp &&
+    data.cp.trim() !== ""
+);
+```
+
+}
+
+Silakan sesuaikan implementasi dengan kode existing.
+
+# 9. BUAT HELPER PEMETAAN MATERI
+
+Buat fungsi:
+
+getCurriculumData(mapel, kelas)
+
+Proses:
+
+kelas
+↓
+tentukan fase
+↓
+ambil cpData[mapel][fase]
+↓
+ambil curriculumMap[kelas]
+
+Jika tidak tersedia:
+
+return [];
+
+DILARANG membuat fallback.
+
+# 10. VALIDASI SEBELUM GENERATE
+
+Sebelum `generateModul()` menjalankan generator dokumen, validasi:
+
+1. Jenis dokumen dipilih.
+2. Mata pelajaran dipilih.
+3. Kelas dipilih.
+4. Fase ditemukan.
+5. CP tersedia.
+
+Jika CP kosong:
+
+STOP.
+
+Tampilkan:
+
+"CP resmi untuk mata pelajaran dan fase ini belum tersedia."
+
+Jangan generate dokumen.
+
+# 11. VALIDASI TOPIK
+
+Untuk dokumen yang membutuhkan topik seperti:
+
+* Modul Ajar
+* Asesmen
+
+pastikan topik berasal dari:
+
+curriculumMap
+
+Jika topik tidak tersedia:
+
+STOP.
+
+Jangan membuat topik otomatis.
+
+# 12. PERTAHANKAN GENERATOR EXISTING
+
+Jangan rebuild fungsi generator yang sudah ada.
+
+Pertahankan:
+
+generateAME()
+
+generateProta()
+
+generateProsem()
+
+generateATP()
+
+generateKKTP()
+
+generateAsesmen()
+
+generateNilai()
+
+routeModulAjar()
+
+dan fungsi export/download yang sudah ada.
+
+Lakukan hanya penyesuaian minimum agar fungsi tersebut menggunakan struktur data baru.
+
+# 13. PERTAHANKAN SEMUA FITUR EXISTING
+
+Pastikan tetap bekerja:
+
+* Pemetaan CP & Materi
+* Generator Instrumen
+* Identitas guru
+* NIP guru
+* Kepala sekolah
+* NIP kepala sekolah
+* Provinsi
+* Dinas pendidikan
+* Nama sekolah
+* Alamat sekolah
+* Email sekolah
+* Tahun pelajaran
+* JP per minggu
+* Semester
+* Mapel
+* Fase/Kelas
+* Topik
+* TP
+* JP
+* Pertemuan
+* Preview
+* AME
+* Prota
+* Prosem
+* ATP
+* KKTP
+* Modul Ajar
+* LKPD
+* Infografis
+* Asesmen
+* Daftar Nilai
+* PDF
+* Word
+* Excel
+* Copy
+* Login
+
+Jangan menghapus fitur tersebut.
+
+# 14. JANGAN IMPLEMENTASIKAN AI
+
+Pada tahap ini JANGAN:
+
+* menggunakan Gemini API
+* menggunakan OpenAI API
+* menggunakan Claude API
+* membuat API key
+* membuat endpoint AI
+* membuat prompt AI
+* membuat AI generator
+
+AI akan ditambahkan pada tahap berikutnya setelah database CP resmi selesai.
+
+# 15. JANGAN MEMBUAT BACKEND
+
+Pada tahap ini JANGAN:
+
+* PostgreSQL
+* Supabase
+* Firebase
+* MongoDB
+* SQLite
+* Express server baru
+* sistem akun baru
+* sistem pembayaran
+* dashboard baru
+
+Gunakan struktur project existing.
+
+# 16. JANGAN MENGARANG CP
+
+INI ATURAN PALING PENTING.
+
+Jika CP resmi belum tersedia:
+
+JANGAN MENGISI SENDIRI.
+
+JANGAN mencari berdasarkan pengetahuan AI.
+
+JANGAN membuat contoh CP seolah-olah resmi.
+
+Biarkan field CP kosong.
+
+Nantinya CP resmi akan dimasukkan secara terpisah dari dokumen sumber resmi.
+
+# 17. SOURCE OF TRUTH
+
+Persiapkan aplikasi dengan prinsip:
+
+CP RESMI
+↓
+TUJUAN PEMBELAJARAN
+↓
+MATERI
+↓
+KEGIATAN PEMBELAJARAN
+↓
+ASESMEN
+
+Dokumen yang dihasilkan nantinya harus dapat ditelusuri kembali ke CP sumber.
+
+AI nantinya hanya boleh mengembangkan dokumen berdasarkan CP tersebut.
+
+AI TIDAK BOLEH menentukan CP.
+
+# 18. PERBAIKI PEMETAAN UI
+
+Tab:
+
+"Pemetaan CP & Materi"
+
+nantinya harus dapat menampilkan:
+
+Mata Pelajaran
+Fase
+CP
+Elemen CP
+Sumber CP
+Pemetaan Kelas
+Materi
+TP
+JP
+Pertemuan
+
+Tetapi jika CP masih kosong tampilkan:
+
+"CP resmi belum tersedia."
+
+Jangan generate teks pengganti.
+
+Gunakan desain existing.
+
+# 19. JANGAN MENGHAPUS DATA EXISTING SECARA SEMBARANGAN
+
+Data topik/TP yang sudah ada boleh dipertahankan sementara sebagai:
+
+curriculumMap
+
+Tetapi JANGAN menganggapnya sebagai CP resmi.
+
+CP resmi harus berada di field:
+
+cp
+
+Jika field tersebut belum memiliki sumber resmi, biarkan kosong.
+
+# 20. PENGUJIAN
+
+Setelah perubahan selesai lakukan pengujian minimum:
+
+TEST 1
+Buka aplikasi.
+
+Pastikan tidak ada JavaScript error.
+
+TEST 2
+Buka tab Pemetaan CP & Materi.
+
+Pastikan dropdown bekerja.
+
+TEST 3
+Pilih mapel yang memiliki curriculumMap.
+
+Pastikan topik dapat muncul.
+
+TEST 4
+Pilih mapel yang belum mempunyai CP resmi.
+
+Pastikan aplikasi menampilkan:
+
+"CP resmi belum tersedia."
+
+TEST 5
+Coba generate dokumen tanpa CP.
+
+Pastikan proses dihentikan.
+
+TEST 6
+Pastikan aplikasi TIDAK menghasilkan:
+
+Konsep Dasar [mapel]
+
+Analisis Lanjutan [mapel]
+
+Praktik Terapan [mapel]
+
+Evaluasi dan Refleksi [mapel]
+
+TEST 7
+Pastikan UI existing tidak berubah secara signifikan.
+
+# 21. HEMAT KREDIT REPLIT
+
+Kerjakan dengan prinsip:
+
+MINIMAL CODE CHANGES.
+
+Jangan melakukan refactoring yang tidak diperlukan.
+
+Jangan membuat dokumentasi panjang.
+
+Jangan melakukan redesign.
+
+Jangan membuat file yang tidak diperlukan.
+
+Jangan install package jika tidak diperlukan.
+
+Jangan menjalankan proses berulang-ulang tanpa alasan.
+
+Gunakan kode existing sebanyak mungkin.
+
+# 22. SETELAH SELESAI
+
+STOP setelah tugas di atas selesai.
+
+JANGAN menawarkan atau otomatis mengimplementasikan tahap berikutnya.
+
+Berikan laporan singkat saja:
+
+FILES CREATED:
+...
+
+FILES MODIFIED:
+...
+
+CHANGES:
+...
+
+TEST RESULT:
+...
+
+REMAINING ISSUE:
+...
+
+Jangan melanjutkan pengembangan tanpa instruksi berikutnya.
