@@ -1,0 +1,123 @@
+FINAL CHECK MVP — JANGAN TAMBAH FITUR.
+
+Kredit Replit sudah 85%.
+Gunakan perubahan seminimal mungkin.
+
+KONDISI:
+AI_API_KEY akan/sudah tersedia melalui Replit Secrets.
+
+TUGAS:
+
+1. JANGAN redesign.
+2. JANGAN refactor.
+3. JANGAN membuat fitur baru.
+4. JANGAN membuat database.
+5. JANGAN install package baru kecuali mutlak diperlukan agar endpoint existing berjalan.
+
+HANYA PERIKSA ALUR EXISTING:
+
+Frontend
+→ POST /api/generate
+→ backend
+→ provider AI
+→ response
+→ preview #output-modul
+
+Pastikan backend membaca API key HANYA dari:
+
+process.env.AI_API_KEY
+
+atau mekanisme environment variable yang sesuai dengan runtime existing.
+
+JANGAN hardcode API key.
+
+Jika AI_API_KEY tidak tersedia, tampilkan:
+
+"AI API belum dikonfigurasi."
+
+JANGAN meminta atau menulis API key ke source code.
+
+==================================================
+TEST
+==================================================
+
+Setelah AI_API_KEY tersedia, lakukan HANYA SATU test minimal.
+
+Gunakan dokumen:
+Modul Ajar
+
+Pastikan:
+
+CP tersedia
+→ TP tersedia
+→ materi tersedia
+→ klik Buat Dokumen
+→ /api/generate dipanggil
+→ AI merespons
+→ hasil muncul pada preview existing.
+
+AI harus menerima CP dari database aplikasi.
+
+AI DILARANG:
+- mencari CP sendiri
+- membuat CP
+- mengganti CP
+- mengarang regulasi
+
+==================================================
+JIKA ERROR
+==================================================
+
+Jika test gagal:
+
+Perbaiki HANYA penyebab langsung error tersebut.
+
+Contoh:
+- endpoint salah
+- environment variable tidak terbaca
+- format request salah
+- format response salah
+- fungsi frontend salah memanggil endpoint
+
+JANGAN memperbaiki hal lain.
+
+JANGAN membuat arsitektur baru.
+
+JANGAN melakukan test berulang tanpa perubahan yang relevan.
+
+==================================================
+JIKA CP BELUM TERSEDIA
+==================================================
+
+Jangan membuat CP menggunakan AI.
+
+Laporkan:
+
+"CP resmi belum tersedia sehingga pengujian AI belum dapat dilakukan."
+
+JANGAN membuat CP dummy permanen.
+
+==================================================
+SELESAI
+==================================================
+
+Jika satu Modul Ajar berhasil muncul di preview:
+
+STOP SEMUA CODING.
+
+Jangan menambahkan fitur.
+Jangan mempercantik UI.
+Jangan melakukan refactor.
+
+Laporkan maksimal:
+
+API KEY: detected / not detected
+ENDPOINT: working / error
+AI RESPONSE: working / error
+PREVIEW: working / error
+BLOCKING ERROR: ...
+
+KREDIT REPLIT SUDAH 85%.
+
+TUJUAN SATU-SATUNYA:
+MEMBUAT SATU MODUL AJAR BERHASIL DIHASILKAN AI.
