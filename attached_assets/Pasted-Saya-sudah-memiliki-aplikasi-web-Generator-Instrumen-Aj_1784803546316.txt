@@ -1,0 +1,227 @@
+Saya sudah memiliki aplikasi web Generator Instrumen Ajar SMA yang berjalan dalam file index.html.
+
+TUGAS ANDA HANYA MELAKUKAN REFACTORING KECIL PADA PROJECT YANG SUDAH ADA.
+
+PENTING:
+
+* Jangan membuat ulang aplikasi.
+* Jangan mengganti desain/UI yang sudah ada.
+* Jangan mengganti Tailwind CSS.
+* Jangan menghapus fitur yang sudah berfungsi.
+* Jangan melakukan redesign.
+* Jangan membuat fitur AI terlebih dahulu.
+* Jangan menambahkan library/framework besar.
+* Gunakan kode yang sudah ada sebanyak mungkin.
+* Fokus hanya pada perubahan yang saya minta.
+* Aplikasi hanya untuk jenjang SMA kelas X, XI, dan XII.
+
+TUJUAN TAHAP INI:
+Menjadikan data Capaian Pembelajaran (CP) sebagai sumber utama seluruh dokumen dan mencegah aplikasi membuat CP/materi palsu ketika data tidak tersedia.
+
+1. HAPUS SISTEM FALLBACK DATA GENERIK
+
+Cari fungsi:
+
+getSafeData(mapel, kelas)
+
+Saat ini jika data tidak tersedia, fungsi membuat data seperti:
+
+* Konsep Dasar
+* Analisis Lanjutan
+* Praktik Terapan
+* Evaluasi dan Refleksi
+
+Hapus perilaku tersebut.
+
+Jika data mapel/fase tidak tersedia, return array kosong:
+
+return [];
+
+Aplikasi DILARANG membuat materi, TP, CP, atau kompetensi generik sebagai pengganti data yang tidak tersedia.
+
+2. TAMBAHKAN VALIDASI DATA
+
+Jika pengguna memilih mapel/kelas yang CP-nya belum tersedia, tampilkan pesan:
+
+"Data Capaian Pembelajaran untuk mata pelajaran dan fase ini belum tersedia. Silakan hubungi administrator."
+
+Jangan menghasilkan dokumen.
+
+3. PISAHKAN CP DARI MATERI
+
+Struktur data jangan lagi hanya:
+
+topik
+jp
+tp
+
+Persiapkan struktur agar nantinya dapat menggunakan:
+
+mapel
+fase
+kelas
+elemen
+cp
+tp
+materi
+jp
+pertemuan
+sumber
+nomor_regulasi
+tahun_regulasi
+
+Tidak perlu mengisi semua CP sekarang.
+
+Gunakan data yang sudah ada sementara, tetapi struktur kode harus siap menerima format tersebut.
+
+4. BUAT FILE DATA TERPISAH
+
+Pindahkan konstanta:
+
+const cpData = {...}
+
+dari index.html ke:
+
+/data/cp-data.js
+
+Kemudian load melalui:
+
+<script src="/data/cp-data.js"></script>
+
+sebelum script utama aplikasi.
+
+Pastikan aplikasi tetap berjalan setelah pemindahan.
+
+Jangan membuat database/server pada tahap ini.
+
+5. TAMBAHKAN METADATA SUMBER CP
+
+Setiap dataset CP nantinya harus dapat memiliki:
+
+source: {
+regulation: "",
+number: "",
+year: "",
+status: "active"
+}
+
+Jangan mengarang nomor regulasi.
+
+Jika belum tersedia gunakan string kosong.
+
+6. BEDAKAN FASE DAN KELAS
+
+Gunakan:
+
+Kelas X = Fase E
+Kelas XI = Fase F
+Kelas XII = Fase F
+
+Tetapi jangan menganggap CP kelas XI dan XII berbeda jika regulasi hanya mendefinisikan CP berdasarkan Fase F.
+
+CP disimpan berdasarkan fase.
+
+Materi/ATP boleh memiliki pemetaan kelas XI/XII.
+
+7. VALIDASI SEBELUM GENERATE
+
+Sebelum fungsi generateModul() menghasilkan dokumen, lakukan pemeriksaan:
+
+* jenis dokumen tersedia
+* mapel tersedia
+* kelas tersedia
+* fase dapat ditentukan
+* data CP tersedia
+
+Jika CP tidak tersedia:
+STOP proses generate.
+
+Jangan menggunakan fallback.
+
+8. TAMBAHKAN FUNGSI HELPER
+
+Buat:
+
+getPhaseFromClass(kelas)
+
+Return:
+X -> E
+XI -> F
+XII -> F
+
+Buat:
+
+getCPData(mapel, fase)
+
+Fungsi ini hanya mengambil data yang benar-benar tersedia.
+
+Tidak boleh membuat data baru.
+
+Buat:
+
+hasCPData(mapel, fase)
+
+untuk mengecek apakah CP tersedia.
+
+9. PERTAHANKAN FITUR YANG SUDAH ADA
+
+Pastikan fitur berikut tetap berjalan:
+
+* tab Pemetaan CP & Materi
+* Generator Instrumen
+* input identitas guru
+* input kepala sekolah
+* data sekolah
+* pilihan semester
+* pilihan mapel
+* pilihan kelas
+* pilihan topik
+* preview dokumen
+* AME
+* Prota
+* Prosem
+* ATP
+* KKTP
+* Modul Ajar
+* Asesmen
+* Daftar Nilai
+* PDF
+* Word
+* Excel
+* Login
+
+Jangan redesign.
+
+10. JANGAN IMPLEMENTASIKAN HAL BERIKUT
+
+Pada tahap ini JANGAN:
+
+* memasang Gemini/OpenAI API
+* membuat database PostgreSQL
+* membuat Supabase
+* membuat Firebase
+* membuat sistem pembayaran
+* membuat akun guru
+* membuat dashboard baru
+* mengubah hosting/deployment
+* membuat ulang aplikasi
+
+11. SELESAI SETELAH PERUBAHAN INI
+
+Setelah implementasi:
+
+* jalankan aplikasi
+* cek console error
+* perbaiki hanya error akibat perubahan ini
+* jangan menambahkan fitur lain
+
+Terakhir berikan laporan singkat:
+
+1. file yang diubah
+2. file yang dibuat
+3. fungsi yang diubah
+4. hasil pengujian
+5. error yang masih ada jika ada
+
+Prioritas utama:
+MINIMAL PERUBAHAN, MINIMAL TOKEN/COMPUTE, JANGAN REBUILD PROJECT.
