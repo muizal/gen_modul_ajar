@@ -9,6 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="/data/cp-data.js"></script>
+    <script src="/data/curriculum-map.js"></script>
     <script>
         tailwind.config = {
             theme: {
@@ -56,7 +57,10 @@
     <div class="blob bg-blue-300 w-80 h-80 rounded-full top-1/3 left-1/3" style="animation-delay: 4s;"></div>
 
     <div class="container mx-auto px-4 py-10 relative z-10 max-w-7xl">
-        <div class="flex justify-end mb-4">
+        <div class="flex justify-end mb-4 gap-3">
+            <button id="admin-btn" onclick="toggleAdminModal(true)" class="hidden px-5 py-2.5 bg-white/80 backdrop-blur rounded-xl border border-slate-200 shadow-sm text-sm font-bold text-indigo-700 hover:bg-slate-50 transition-all flex items-center gap-2">
+                <i class="fas fa-cog"></i> Kelola CP
+            </button>
             <button id="auth-btn" onclick="handleAuthClick()" class="px-5 py-2.5 bg-white/80 backdrop-blur rounded-xl border border-slate-200 shadow-sm text-sm font-bold text-slate-700 hover:bg-slate-50 transition-all flex items-center gap-2">
                 <i class="fas fa-lock"></i> Login Akses
             </button>
@@ -281,6 +285,71 @@
         </div>
     </div>
 
+    <div id="admin-modal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center transition-all overflow-y-auto py-6">
+        <div class="bg-white rounded-3xl p-6 md:p-8 max-w-4xl w-full mx-4 shadow-2xl relative animate-fade-in my-auto">
+            <button onclick="toggleAdminModal(false)" class="absolute top-4 right-4 text-slate-400 hover:text-red-500 transition-colors"><i class="fas fa-times text-xl"></i></button>
+            <div class="flex items-center gap-3 mb-6 border-b border-slate-200 pb-4">
+                <div class="bg-indigo-100 p-3 rounded-xl text-indigo-600"><i class="fas fa-database text-xl"></i></div>
+                <div><h3 class="text-2xl font-bold text-slate-800">Kelola Database CP</h3><p class="text-sm text-slate-500">Pengaturan CP resmi (sumber kebenaran). Data tersimpan sementara di browser.</p></div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1">Mata Pelajaran</label>
+                    <select id="admin-mapel" onchange="loadAdminForm()" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-white outline-none focus:border-indigo-500">
+                        <option value="" disabled selected>-- Pilih Mapel --</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1">Fase</label>
+                    <select id="admin-fase" onchange="loadAdminForm()" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-white outline-none focus:border-indigo-500">
+                        <option value="E">E (Kelas X)</option>
+                        <option value="F">F (Kelas XI & XII)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 mb-6">
+                <h4 class="font-bold text-slate-800 mb-3">Sumber Regulasi</h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                    <input type="text" id="admin-institution" placeholder="Institusi (Cth: Kemendikdasmen)" class="w-full px-3 py-2 rounded-lg border border-slate-200 outline-none focus:border-indigo-500">
+                    <input type="text" id="admin-regulation" placeholder="Regulasi (Cth: Keputusan Kepala BSKAP)" class="w-full px-3 py-2 rounded-lg border border-slate-200 outline-none focus:border-indigo-500">
+                    <input type="text" id="admin-number" placeholder="Nomor (Cth: 046/H/KR/2025)" class="w-full px-3 py-2 rounded-lg border border-slate-200 outline-none focus:border-indigo-500">
+                    <input type="text" id="admin-year" placeholder="Tahun (Cth: 2025)" class="w-full px-3 py-2 rounded-lg border border-slate-200 outline-none focus:border-indigo-500">
+                </div>
+                <label class="flex items-center gap-2 text-sm"><input type="checkbox" id="admin-status" checked class="text-indigo-600"> Aktif</label>
+            </div>
+
+            <div class="mb-4">
+                <label class="block text-sm font-semibold text-slate-700 mb-1">CP Umum</label>
+                <textarea id="admin-cp" rows="4" placeholder="Tulis Capaian Pembelajaran umum untuk mapel dan fase ini..." class="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:border-indigo-500"></textarea>
+            </div>
+
+            <div class="mb-4">
+                <div class="flex items-center justify-between mb-2">
+                    <h4 class="font-bold text-slate-800">Elemen CP</h4>
+                    <button onclick="addAdminElement()" class="px-3 py-1.5 bg-indigo-100 text-indigo-700 rounded-lg text-sm font-semibold hover:bg-indigo-200 transition-colors"><i class="fas fa-plus mr-1"></i> Tambah Elemen</button>
+                </div>
+                <div id="admin-elements" class="space-y-3"></div>
+            </div>
+
+            <div class="flex flex-wrap gap-2 mb-6">
+                <button onclick="saveAdminCP()" class="px-5 py-2.5 rounded-xl font-bold text-white bg-indigo-600 hover:bg-indigo-700 shadow-lg transition-all"><i class="fas fa-save mr-2"></i>Simpan CP</button>
+                <button onclick="exportCPData()" class="px-5 py-2.5 rounded-xl font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-all"><i class="fas fa-file-export mr-2"></i>Export Database CP</button>
+            </div>
+
+            <div class="border-t border-slate-200 pt-4">
+                <h4 class="font-bold text-slate-800 mb-2">Import Data CP (JSON)</h4>
+                <textarea id="admin-import-json" rows="4" placeholder="Paste JSON CP di sini..." class="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:border-indigo-500 mb-2"></textarea>
+                <div id="admin-import-error" class="hidden text-red-600 text-sm bg-red-50 p-2 rounded-lg mb-2"></div>
+                <div class="flex flex-wrap gap-2">
+                    <button onclick="validateImportJSON()" class="px-4 py-2 rounded-lg font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-all"><i class="fas fa-check-circle mr-2"></i>Validasi JSON</button>
+                    <button onclick="importCPData()" class="px-4 py-2 rounded-lg font-semibold text-white bg-green-600 hover:bg-green-700 shadow transition-all"><i class="fas fa-file-import mr-2"></i>Import CP</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div id="toast" class="fixed bottom-5 right-5 bg-slate-800 text-white px-6 py-3 rounded-xl shadow-2xl transform translate-y-20 opacity-0 pointer-events-none transition-all duration-300 z-50 flex items-center gap-3 font-medium">
         <i class="fas fa-shield-alt text-accent"></i><span id="toast-message">Pesan</span>
     </div>
@@ -307,8 +376,44 @@
         });
 
         // --- 1. DATA CP & PEMETAAN MATERI ---
-        // Data Capaian Pembelajaran (CP) dan pemetaan materi di-load dari /data/cp-data.js.
+        // Data Capaian Pembelajaran (CP) resmi di-load dari /data/cp-data.js.
+        // Data pemetaan materi di-load dari /data/curriculum-map.js.
         // Aplikasi khusus SMA: Kelas X = Fase E, Kelas XI = Fase F, Kelas XII = Fase F.
+        // Temporary client-side storage. Replace with server database before production multi-user deployment.
+
+        const CP_OVERRIDES_KEY = 'cpAdminOverrides';
+
+        function deepCopy(obj) { return JSON.parse(JSON.stringify(obj)); }
+
+        function loadDefaultCPData() {
+            return window.cpData ? deepCopy(window.cpData) : {};
+        }
+
+        function loadCPOverrides() {
+            try {
+                const raw = localStorage.getItem(CP_OVERRIDES_KEY);
+                return raw ? JSON.parse(raw) : {};
+            } catch (e) { return {}; }
+        }
+
+        function mergeCPData(defaults, overrides) {
+            const merged = deepCopy(defaults);
+            Object.keys(overrides).forEach(mapel => {
+                if (!merged[mapel]) merged[mapel] = {};
+                Object.keys(overrides[mapel]).forEach(fase => {
+                    merged[mapel][fase] = Object.assign({}, merged[mapel][fase] || {}, deepCopy(overrides[mapel][fase]));
+                });
+            });
+            return merged;
+        }
+
+        // Working CP data set: defaults merged with admin localStorage overrides.
+        let workingCPData = mergeCPData(loadDefaultCPData(), loadCPOverrides());
+
+        function saveCPOverrides(overrides) {
+            localStorage.setItem(CP_OVERRIDES_KEY, JSON.stringify(overrides));
+            workingCPData = mergeCPData(loadDefaultCPData(), loadCPOverrides());
+        }
 
         function getPhaseFromClass(kelas) {
             if (kelas === 'X') return 'E';
@@ -318,8 +423,8 @@
 
         function getCPData(mapel, fase) {
             if (!mapel || !fase) return null;
-            if (window.cpData && window.cpData[mapel] && window.cpData[mapel][fase]) {
-                return window.cpData[mapel][fase];
+            if (workingCPData && workingCPData[mapel] && workingCPData[mapel][fase]) {
+                return workingCPData[mapel][fase];
             }
             return null;
         }
@@ -329,12 +434,37 @@
             return !!(data && data.cp && data.cp.trim() !== "");
         }
 
+        function getCPReference(mapel, fase) {
+            const data = getCPData(mapel, fase);
+            if (!data) return null;
+            return { mapel, fase, cp: data.cp || '', elements: data.elements || [], source: data.source || {} };
+        }
+
         function getCurriculumData(mapel, kelas) {
+            if (!window.curriculumMap || !window.curriculumMap[mapel] || !window.curriculumMap[mapel][kelas]) return [];
+            return window.curriculumMap[mapel][kelas];
+        }
+
+        function generateCPSourceBlock(mapel, kelas) {
             const fase = getPhaseFromClass(kelas);
-            if (!fase) return [];
-            const cp = getCPData(mapel, fase);
-            if (!cp || !cp.curriculumMap || !cp.curriculumMap[kelas]) return [];
-            return cp.curriculumMap[kelas];
+            const ref = getCPReference(mapel, fase);
+            if (!ref) return '';
+            let src = '';
+            if (ref.source && (ref.source.institution || ref.source.regulation || ref.source.number || ref.source.year)) {
+                src = `<p><strong>Sumber CP:</strong> ${ref.source.institution || '-'} | ${ref.source.regulation || '-'} ${ref.source.number || '-'} Tahun ${ref.source.year || '-'}</p>`;
+            }
+            let elements = '';
+            if (ref.elements && ref.elements.length > 0) {
+                elements = `<p><strong>Elemen yang relevan:</strong></p><ul>${ref.elements.map(e => `<li><strong>${e.name || '-'}</strong>: ${e.cp || '-'}</li>`).join('')}</ul>`;
+            }
+            return `<div style="margin-bottom:15px; padding:10px; border:1px solid #cbd5e1; background:#f8fafc; border-radius:8px;">
+                <h3>DASAR PENYUSUNAN</h3>
+                <p><strong>Mata Pelajaran:</strong> ${ref.mapel}</p>
+                <p><strong>Fase:</strong> ${ref.fase}</p>
+                ${src}
+                <p><strong>Capaian Pembelajaran:</strong></p><p>${ref.cp || '-'}</p>
+                ${elements}
+            </div>`;
         }
 
         // --- STREAMING_CHUNK:Logika Navigasi Tab dan UI Dinamis ---
@@ -363,20 +493,24 @@
             const cpInfo = (data, cpAvailable, label) => {
                 if (!data) return `<div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm"><h4 class="font-bold text-slate-800 mb-2">Fase ${label}</h4><p class="text-sm text-red-600">Data Capaian Pembelajaran untuk mata pelajaran dan fase ini belum tersedia. Silakan hubungi administrator.</p></div>`;
                 let sumber = '';
-                if (data.source && (data.source.regulation || data.source.number || data.source.year)) {
-                    sumber = `<p class="text-xs text-slate-500 mt-1"><strong>Sumber:</strong> ${data.source.regulation} ${data.source.number} ${data.source.year}</p>`;
+                if (data.source && (data.source.institution || data.source.regulation || data.source.number || data.source.year)) {
+                    sumber = `<p class="text-xs text-slate-500 mt-1"><strong>Sumber:</strong> ${data.source.institution || '-'} | ${data.source.regulation || '-'} ${data.source.number || '-'} Tahun ${data.source.year || '-'}</p>`;
                 }
                 if (!cpAvailable) {
                     return `<div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm"><h4 class="font-bold text-slate-800 mb-2">Fase ${label}</h4><p class="text-sm text-red-600">CP resmi belum tersedia.</p>${sumber}</div>`;
                 }
                 let elementsHtml = '';
                 if (data.elements && data.elements.length > 0) {
-                    elementsHtml = `<ul class="list-disc ml-5 mt-2 text-sm text-slate-700">${data.elements.map(e => `<li>${e}</li>`).join('')}</ul>`;
+                    elementsHtml = `<ul class="list-disc ml-5 mt-2 text-sm text-slate-700">${data.elements.map(e => `<li><strong>${e.name || '-'}</strong>: ${e.cp || '-'}</li>`).join('')}</ul>`;
                 }
                 return `<div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm"><h4 class="font-bold text-slate-800 mb-2">Fase ${label}</h4><p class="text-sm text-slate-700"><strong>CP:</strong> ${data.cp || '-'}</p>${elementsHtml}${sumber}</div>`;
             };
 
             let html = `<div class="bg-indigo-50 p-6 rounded-2xl mb-6"><h3 class="text-xl font-bold text-primary mb-2">Pemetaan ${mapel} (Fase E & F)</h3><p class="text-sm text-slate-600">Kelas X = Fase E | Kelas XI & XII = Fase F</p></div>`;
+            html += `<div class="mb-4 flex flex-wrap gap-2">`;
+            html += cpE ? `<span class="px-3 py-1 rounded-full bg-green-100 text-green-700 text-sm font-semibold"><i class="fas fa-check-circle mr-1"></i> Fase E: CP Resmi Tersedia</span>` : `<span class="px-3 py-1 rounded-full bg-amber-100 text-amber-700 text-sm font-semibold"><i class="fas fa-exclamation-triangle mr-1"></i> Fase E: CP Resmi Belum Tersedia</span>`;
+            html += cpF ? `<span class="px-3 py-1 rounded-full bg-green-100 text-green-700 text-sm font-semibold"><i class="fas fa-check-circle mr-1"></i> Fase F: CP Resmi Tersedia</span>` : `<span class="px-3 py-1 rounded-full bg-amber-100 text-amber-700 text-sm font-semibold"><i class="fas fa-exclamation-triangle mr-1"></i> Fase F: CP Resmi Belum Tersedia</span>`;
+            html += `</div>`;
             html += `<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">${cpInfo(faseE, cpE, 'E')}${cpInfo(faseF, cpF, 'F')}</div>`;
             html += `<div class="space-y-6">`;
             ['X', 'XI', 'XII'].forEach(kelas => {
@@ -505,7 +639,11 @@
             
             if (!jenisDoc || !mapel || !kelas) { alert("Pilih Dokumen, Mapel, dan Kelas!"); return; }
             if (!fase) { alert("Kelas tidak valid!"); return; }
-            if (!hasCPData(mapel, fase)) { alert("CP resmi untuk mata pelajaran dan fase ini belum tersedia."); return; }
+
+            const cpDependent = ['ATP', 'KKTP', 'Modul Ajar', 'Asesmen'];
+            if (cpDependent.includes(jenisDoc) && !hasCPData(mapel, fase)) {
+                alert("Dokumen tidak dapat dibuat karena CP resmi belum tersedia."); return;
+            }
 
             const dataMateri = getCurriculumData(mapel, kelas);
 
@@ -865,8 +1003,17 @@
 
         function updateAuthUI() {
             const btn = document.getElementById('auth-btn');
-            if(isLoggedIn) { btn.innerHTML = '<i class="fas fa-sign-out-alt"></i> Logout Akun'; btn.classList.replace('text-slate-700', 'text-red-600'); } 
-            else { btn.innerHTML = '<i class="fas fa-lock"></i> Login Akses'; btn.classList.replace('text-red-600', 'text-slate-700'); }
+            const adminBtn = document.getElementById('admin-btn');
+            if(isLoggedIn) {
+                btn.innerHTML = '<i class="fas fa-sign-out-alt"></i> Logout Akun';
+                btn.classList.replace('text-slate-700', 'text-red-600');
+                adminBtn.classList.remove('hidden');
+            } else {
+                btn.innerHTML = '<i class="fas fa-lock"></i> Login Akses';
+                btn.classList.replace('text-red-600', 'text-slate-700');
+                adminBtn.classList.add('hidden');
+                toggleAdminModal(false);
+            }
         }
 
         window.toggleLoginModal = function(show) {
@@ -881,6 +1028,184 @@
                 isLoggedIn = true; localStorage.setItem('isAuth','true'); updateAuthUI(); toggleLoginModal(false);
                 showToast("Akses Sistem Berhasil Dibuka!");
             } else { document.getElementById('login-error').classList.remove('hidden'); }
+        };
+
+        // --- ADMIN CP PANEL ---
+        const VALID_ADMIN_FASES = ['E', 'F'];
+
+        function populateAdminMapelDropdown() {
+            const adminMapel = document.getElementById('admin-mapel');
+            const genMapel = document.getElementById('gen-mapel');
+            if (!adminMapel || !genMapel) return;
+            // Copy gen-mapel content but drop its placeholder option to avoid duplicates.
+            let html = genMapel.innerHTML;
+            html = html.replace(/<option value=""[^>]*>--\s*Pilih Mapel\s*--<\/option>/i, '');
+            adminMapel.innerHTML = '<option value="" disabled selected>-- Pilih Mapel --</option>' + html;
+        }
+
+        window.toggleAdminModal = function(show) {
+            const modal = document.getElementById('admin-modal');
+            if (show) {
+                if (!isLoggedIn) return toggleLoginModal(true);
+                populateAdminMapelDropdown();
+                modal.classList.remove('hidden');
+                loadAdminForm();
+            } else {
+                modal.classList.add('hidden');
+            }
+        };
+
+        window.loadAdminForm = function() {
+            const mapel = document.getElementById('admin-mapel').value;
+            const fase = document.getElementById('admin-fase').value;
+            if (!mapel || !fase) return;
+            const data = getCPData(mapel, fase) || { cp: '', elements: [], source: {} };
+            document.getElementById('admin-cp').value = data.cp || '';
+            document.getElementById('admin-institution').value = (data.source && data.source.institution) || '';
+            document.getElementById('admin-regulation').value = (data.source && data.source.regulation) || '';
+            document.getElementById('admin-number').value = (data.source && data.source.number) || '';
+            document.getElementById('admin-year').value = (data.source && data.source.year) || '';
+            document.getElementById('admin-status').checked = (data.source && data.source.status !== 'inactive');
+            const container = document.getElementById('admin-elements');
+            container.innerHTML = '';
+            const elements = data.elements || [];
+            if (elements.length === 0) { addAdminElement(); }
+            else { elements.forEach((e, i) => addAdminElement(e.name || '', e.cp || '')); }
+        };
+
+        window.addAdminElement = function(name = '', cp = '') {
+            const container = document.getElementById('admin-elements');
+            const idx = container.children.length;
+            const div = document.createElement('div');
+            div.className = 'bg-white p-3 rounded-xl border border-slate-200';
+            div.innerHTML = `
+                <div class="flex items-center justify-between mb-2"><span class="text-xs font-bold text-slate-500 uppercase">Elemen #${idx + 1}</span><button onclick="this.parentElement.parentElement.remove()" class="text-red-500 hover:text-red-700 text-sm"><i class="fas fa-trash"></i></button></div>
+                <input type="text" placeholder="Nama Elemen" class="admin-elem-name w-full px-3 py-2 rounded-lg border border-slate-200 outline-none focus:border-indigo-500 mb-2" value="${name.replace(/"/g, '&quot;')}">
+                <textarea placeholder="Isi CP Elemen" rows="2" class="admin-elem-cp w-full px-3 py-2 rounded-lg border border-slate-200 outline-none focus:border-indigo-500">${cp.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</textarea>`;
+            container.appendChild(div);
+        };
+
+        function collectAdminElements() {
+            const container = document.getElementById('admin-elements');
+            const elements = [];
+            container.querySelectorAll(':scope > div').forEach(div => {
+                const name = div.querySelector('.admin-elem-name').value.trim();
+                const cp = div.querySelector('.admin-elem-cp').value.trim();
+                if (name || cp) elements.push({ name, cp });
+            });
+            return elements;
+        }
+
+        function validateAdminCP() {
+            const mapel = document.getElementById('admin-mapel').value;
+            const fase = document.getElementById('admin-fase').value;
+            const cp = document.getElementById('admin-cp').value.trim();
+            if (!mapel) return { ok: false, msg: "Pilih Mata Pelajaran." };
+            if (!VALID_ADMIN_FASES.includes(fase)) return { ok: false, msg: "Fase tidak valid." };
+            if (!cp) return { ok: false, msg: "CP Umum tidak boleh kosong." };
+            const elements = collectAdminElements();
+            for (let i = 0; i < elements.length; i++) {
+                if (!elements[i].name) return { ok: false, msg: `Nama Elemen #${i + 1} tidak boleh kosong.` };
+                if (!elements[i].cp) return { ok: false, msg: `Isi CP Elemen #${i + 1} tidak boleh kosong.` };
+            }
+            return { ok: true, mapel, fase, cp, elements };
+        }
+
+        window.saveAdminCP = function() {
+            const v = validateAdminCP();
+            if (!v.ok) { alert(v.msg); return; }
+            const overrides = loadCPOverrides();
+            if (!overrides[v.mapel]) overrides[v.mapel] = {};
+            overrides[v.mapel][v.fase] = {
+                mapel: v.mapel,
+                fase: v.fase,
+                cp: v.cp,
+                elements: v.elements,
+                source: {
+                    institution: document.getElementById('admin-institution').value.trim(),
+                    regulation: document.getElementById('admin-regulation').value.trim(),
+                    number: document.getElementById('admin-number').value.trim(),
+                    year: document.getElementById('admin-year').value.trim(),
+                    status: document.getElementById('admin-status').checked ? 'active' : 'inactive'
+                }
+            };
+            saveCPOverrides(overrides);
+            showToast("CP berhasil disimpan.");
+        };
+
+        window.exportCPData = function() {
+            const data = getExportableCPData();
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'cp-data.json';
+            link.click();
+            showToast("Export CP berhasil.");
+        };
+
+        function getExportableCPData() {
+            return deepCopy(workingCPData);
+        }
+
+        function validateCPPayload(payload) {
+            if (!payload || typeof payload !== 'object') return { ok: false, msg: "JSON harus berupa object." };
+            const mapels = Object.keys(payload);
+            if (mapels.length === 0) return { ok: false, msg: "Tidak ada data mapel." };
+            for (const mapel of mapels) {
+                const fases = Object.keys(payload[mapel]);
+                if (fases.length === 0) return { ok: false, msg: `Mapel ${mapel} tidak memiliki fase.` };
+                for (const fase of fases) {
+                    if (!VALID_ADMIN_FASES.includes(fase)) return { ok: false, msg: `Fase ${fase} tidak valid. Hanya E atau F.` };
+                    const item = payload[mapel][fase];
+                    if (!item || typeof item !== 'object') return { ok: false, msg: `Data ${mapel} ${fase} tidak valid.` };
+                    if (!item.cp || item.cp.trim() === '') return { ok: false, msg: `CP ${mapel} ${fase} tidak boleh kosong.` };
+                    if (!item.source || typeof item.source !== 'object') return { ok: false, msg: `Source ${mapel} ${fase} tidak valid.` };
+                    if (!Array.isArray(item.elements)) return { ok: false, msg: `Elements ${mapel} ${fase} harus berupa array.` };
+                    for (let i = 0; i < item.elements.length; i++) {
+                        const el = item.elements[i];
+                        if (!el.name || el.name.trim() === '') return { ok: false, msg: `Elemen #${i + 1} ${mapel} ${fase} tidak memiliki nama.` };
+                        if (!el.cp || el.cp.trim() === '') return { ok: false, msg: `CP elemen #${i + 1} ${mapel} ${fase} tidak boleh kosong.` };
+                    }
+                }
+            }
+            return { ok: true };
+        }
+
+        window.validateImportJSON = function() {
+            const raw = document.getElementById('admin-import-json').value.trim();
+            const errEl = document.getElementById('admin-import-error');
+            errEl.classList.add('text-red-600', 'bg-red-50');
+            errEl.classList.remove('text-green-700', 'bg-green-50');
+            if (!raw) { errEl.textContent = "JSON kosong."; errEl.classList.remove('hidden'); return; }
+            let payload;
+            try { payload = JSON.parse(raw); } catch (e) { errEl.textContent = "JSON tidak valid: " + e.message; errEl.classList.remove('hidden'); return; }
+            const v = validateCPPayload(payload);
+            if (!v.ok) { errEl.textContent = v.msg; errEl.classList.remove('hidden'); }
+            else {
+                errEl.textContent = "JSON valid. Klik Import CP untuk menyimpan.";
+                errEl.classList.remove('hidden', 'text-red-600', 'bg-red-50');
+                errEl.classList.add('text-green-700', 'bg-green-50');
+            }
+        };
+
+        window.importCPData = function() {
+            const raw = document.getElementById('admin-import-json').value.trim();
+            const errEl = document.getElementById('admin-import-error');
+            if (!raw) { errEl.textContent = "JSON kosong."; errEl.classList.remove('hidden'); return; }
+            let payload;
+            try { payload = JSON.parse(raw); } catch (e) { errEl.textContent = "JSON tidak valid: " + e.message; errEl.classList.remove('hidden'); return; }
+            const v = validateCPPayload(payload);
+            if (!v.ok) { errEl.textContent = v.msg; errEl.classList.remove('hidden'); return; }
+            const overrides = loadCPOverrides();
+            Object.keys(payload).forEach(mapel => {
+                if (!overrides[mapel]) overrides[mapel] = {};
+                Object.keys(payload[mapel]).forEach(fase => { overrides[mapel][fase] = deepCopy(payload[mapel][fase]); });
+            });
+            saveCPOverrides(overrides);
+            document.getElementById('admin-import-json').value = '';
+            errEl.classList.add('hidden');
+            loadAdminForm();
+            showToast("Import CP berhasil.");
         };
 
         window.copyOutput = function() { if(!isLoggedIn) return toggleLoginModal(true); navigator.clipboard.writeText(document.getElementById('output-modul').innerText); showToast("Dokumen disalin!"); };

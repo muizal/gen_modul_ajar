@@ -1,0 +1,689 @@
+LANJUTKAN PROJECT YANG SUDAH ADA.
+
+INI ADALAH TAHAP 2.
+
+PENTING:
+Jangan rebuild aplikasi.
+Jangan redesign UI.
+Jangan menghapus pekerjaan Tahap 1.
+Jangan mengubah teknologi/framework.
+Jangan install package baru jika tidak benar-benar diperlukan.
+Gunakan kode existing sebanyak mungkin.
+Target utama adalah HEMAT KREDIT REPLIT.
+
+==================================================
+TUJUAN TAHAP 2
+==============
+
+Saya ingin membuat sistem "Database CP Resmi SMA" sebagai SOURCE OF TRUTH untuk seluruh generator dokumen.
+
+Aplikasi hanya untuk:
+
+SMA
+Kelas X = Fase E
+Kelas XI = Fase F
+Kelas XII = Fase F
+
+CP tidak boleh dibuat oleh AI.
+
+CP hanya boleh berasal dari data resmi yang dimasukkan ke aplikasi.
+
+==================================================
+
+1. PERTAHANKAN HASIL TAHAP 1
+   ==================================================
+
+Pertahankan:
+
+* getPhaseFromClass()
+* getCPData()
+* hasCPData()
+* getCurriculumData()
+* sistem tanpa fallback CP
+* validasi CP
+* cp-data.js
+* curriculumMap
+* seluruh generator existing
+* seluruh UI existing
+
+Jangan mengembalikan sistem fallback.
+
+Jika CP tidak tersedia, aplikasi tetap harus mengatakan:
+
+"CP resmi belum tersedia."
+
+==================================================
+2. PISAHKAN CP RESMI DAN PEMETAAN PEMBELAJARAN
+==============================================
+
+Gunakan dua file:
+
+/data/cp-data.js
+
+/data/curriculum-map.js
+
+Jika curriculum-map.js belum ada, buat.
+
+FUNGSI:
+
+cp-data.js
+HANYA menyimpan:
+
+* Mata Pelajaran
+* Fase
+* CP
+* Elemen CP
+* Sumber regulasi
+* Nomor regulasi
+* Tahun
+* Status
+
+curriculum-map.js
+menyimpan:
+
+* kelas
+* semester
+* TP
+* materi/topik
+* JP
+* jumlah pertemuan
+
+JANGAN mencampurkan CP resmi dengan materi.
+
+==================================================
+3. STRUKTUR CP-DATA
+===================
+
+Gunakan struktur sederhana seperti:
+
+window.cpData = {
+
+"B.Inggris": {
+
+```
+"E": {
+
+  mapel: "Bahasa Inggris",
+
+  fase: "E",
+
+  cp: "",
+
+  elements: [],
+
+  source: {
+    institution: "Kemendikdasmen",
+    regulation: "Keputusan Kepala BSKAP",
+    number: "046/H/KR/2025",
+    year: "2025",
+    status: "active"
+  }
+
+},
+
+"F": {
+
+  mapel: "Bahasa Inggris",
+
+  fase: "F",
+
+  cp: "",
+
+  elements: [],
+
+  source: {
+    institution: "Kemendikdasmen",
+    regulation: "Keputusan Kepala BSKAP",
+    number: "046/H/KR/2025",
+    year: "2025",
+    status: "active"
+  }
+
+}
+```
+
+}
+
+};
+
+PENTING:
+
+Jangan isi field CP menggunakan pengetahuan AI.
+
+Biarkan:
+
+cp: ""
+
+dan:
+
+elements: []
+
+jika teks resmi belum diberikan.
+
+==================================================
+4. REGULASI CP
+==============
+
+Metadata aplikasi harus siap menggunakan:
+
+A. MAPEL NON-AGAMA
+
+Keputusan Kepala BSKAP
+Nomor 046/H/KR/2025
+
+B. PENDIDIKAN AGAMA DAN BUDI PEKERTI
+
+Siapkan metadata agar dapat menggunakan:
+
+Keputusan Kepala BKPDM
+Nomor 020 Tahun 2026
+
+sebagai perubahan atas:
+
+Keputusan Kepala BSKAP
+Nomor 046/H/KR/2025.
+
+PENTING:
+
+Jangan mencari CP sendiri.
+Jangan mengarang isi CP.
+Jangan meminta AI menghasilkan CP.
+
+Saya akan memasukkan teks CP resmi kemudian.
+
+==================================================
+5. BUAT PANEL ADMIN CP
+======================
+
+Gunakan sistem Login existing.
+
+Jangan membuat sistem autentikasi baru pada tahap ini.
+
+Tambahkan tombol/menu kecil:
+
+"Kelola CP"
+
+Menu hanya terlihat setelah login.
+
+Gunakan desain existing.
+
+Jangan membuat dashboard admin baru.
+
+==================================================
+6. HALAMAN/SECTION KELOLA CP
+============================
+
+Pada Kelola CP sediakan form:
+
+Mata Pelajaran
+Fase
+Sumber Regulasi
+Nomor Regulasi
+Tahun Regulasi
+CP Umum
+Elemen CP
+
+Elemen CP harus bisa lebih dari satu.
+
+Contoh:
+
+Nama Elemen:
+Menyimak-Berbicara
+
+Isi CP:
+[textarea]
+
+Tombol:
+
+* Tambah Elemen
+
+==================================================
+7. IMPORT CP DENGAN JSON
+========================
+
+Tambahkan fitur:
+
+"Import Data CP"
+
+Format:
+
+JSON
+
+Admin dapat paste JSON CP ke textarea.
+
+Tambahkan tombol:
+
+Validasi JSON
+Import CP
+
+Sebelum import lakukan validasi:
+
+* mapel tersedia
+* fase E/F
+* cp tersedia
+* source tersedia
+* struktur elements valid
+
+Jika gagal:
+
+JANGAN simpan.
+
+Tampilkan alasan error.
+
+==================================================
+8. EXPORT CP
+============
+
+Tambahkan:
+
+"Export Database CP"
+
+Hasil:
+
+cp-data.json
+
+Tujuannya agar database CP dapat dibackup.
+
+==================================================
+9. PENYIMPANAN SEMENTARA
+========================
+
+Karena kita belum membuat backend/database server:
+
+gunakan localStorage untuk perubahan CP melalui Admin.
+
+Tetapi data default tetap berasal dari:
+
+/data/cp-data.js
+
+Urutan pembacaan:
+
+cp-data.js
+↓
+cek localStorage
+↓
+jika Admin mempunyai data valid
+↓
+merge/override berdasarkan mapel + fase
+
+Buat implementasi sesederhana mungkin.
+
+JANGAN gunakan:
+
+PostgreSQL
+Supabase
+Firebase
+MongoDB
+
+pada tahap ini.
+
+==================================================
+10. VALIDASI CP
+===============
+
+Sebelum CP disimpan, validasi:
+
+CP tidak kosong.
+
+Fase hanya:
+
+E
+F
+
+Mapel harus berasal dari daftar mapel aplikasi.
+
+Elemen:
+
+name tidak kosong
+cp tidak kosong
+
+Jika data tidak valid:
+
+STOP.
+
+==================================================
+11. STATUS CP
+=============
+
+Pada tab:
+
+"Pemetaan CP & Materi"
+
+tampilkan status:
+
+Jika CP tersedia:
+
+✓ CP Resmi Tersedia
+
+Jika tidak:
+
+⚠ CP Resmi Belum Tersedia
+
+Jika tersedia tampilkan:
+
+Mata Pelajaran
+Fase
+CP
+Elemen
+Sumber
+Nomor regulasi
+Tahun
+
+==================================================
+12. TRACEABILITY
+================
+
+Persiapkan helper:
+
+getCPReference(mapel, fase)
+
+Return object:
+
+{
+mapel,
+fase,
+cp,
+elements,
+source
+}
+
+Generator dokumen nantinya akan menggunakan object ini.
+
+Jangan implementasikan AI dahulu.
+
+==================================================
+13. CURRICULUM MAP
+==================
+
+curriculum-map.js harus menggunakan struktur:
+
+window.curriculumMap = {
+
+"B.Inggris": {
+
+"X": [],
+
+"XI": [],
+
+"XII": []
+
+}
+
+};
+
+Item dapat berbentuk:
+
+{
+semester: "Ganjil",
+topik: "",
+tp: "",
+jp: 0,
+pertemuan: 0
+}
+
+Data topik existing boleh dipindahkan ke sini.
+
+JANGAN menghapus data topik existing.
+
+==================================================
+14. HUBUNGKAN CP → CURRICULUM MAP
+=================================
+
+Alur aplikasi:
+
+Pilih Mapel
+↓
+Pilih Kelas
+↓
+getPhaseFromClass()
+↓
+getCPData()
+↓
+cek CP
+↓
+getCurriculumData()
+↓
+Topik/TP
+
+Dengan demikian:
+
+CP Fase F
+
+dapat menjadi sumber untuk:
+
+Kelas XI
+dan
+Kelas XII.
+
+==================================================
+15. GENERATOR HARUS TETAP TERKUNCI JIKA CP KOSONG
+=================================================
+
+Walaupun curriculumMap mempunyai materi:
+
+Jika CP resmi kosong:
+
+JANGAN generate:
+
+ATP
+KKTP
+Modul Ajar
+Asesmen
+
+Tampilkan:
+
+"Dokumen tidak dapat dibuat karena CP resmi belum tersedia."
+
+Jangan membuat fallback.
+
+==================================================
+16. DOKUMEN NON-CP
+==================
+
+Dokumen administratif yang tidak membutuhkan isi CP secara langsung seperti:
+
+AME
+Format Daftar Nilai
+
+boleh tetap bekerja.
+
+Jangan blokir seluruh aplikasi hanya karena CP kosong.
+
+==================================================
+17. PERSIAPKAN "DASAR PENYUSUNAN"
+=================================
+
+Buat helper:
+
+generateCPSourceBlock(mapel, kelas)
+
+Nantinya menghasilkan:
+
+DASAR PENYUSUNAN
+
+Mata Pelajaran:
+Fase:
+Sumber CP:
+Nomor:
+Tahun:
+
+Capaian Pembelajaran:
+...
+
+Elemen yang relevan:
+...
+
+Jangan wajib menampilkan block ini pada semua dokumen sekarang.
+
+Cukup persiapkan helper agar dapat digunakan pada tahap AI.
+
+==================================================
+18. JANGAN IMPLEMENTASIKAN AI
+=============================
+
+JANGAN:
+
+* OpenAI
+* Gemini
+* Claude
+* API AI
+* AI Agent
+* generate TP dengan AI
+* generate CP dengan AI
+* generate Modul dengan AI
+
+Tahap AI akan dilakukan setelah database CP resmi selesai.
+
+==================================================
+19. JANGAN MEMBUAT BACKEND
+==========================
+
+Jangan:
+
+* Express baru
+* database server
+* API server
+* sistem akun baru
+* sistem pembayaran
+* subscription
+* dashboard kompleks
+
+==================================================
+20. KEAMANAN DATA
+=================
+
+Jangan menganggap localStorage sebagai keamanan produksi.
+
+Tambahkan komentar kode:
+
+// Temporary client-side storage.
+// Replace with server database before production multi-user deployment.
+
+Jangan menghabiskan waktu membuat security system baru sekarang.
+
+==================================================
+21. TEST
+========
+
+Lakukan pengujian minimum.
+
+TEST A
+
+Mapel dengan CP kosong.
+
+Hasil:
+
+"CP Resmi Belum Tersedia"
+
+TEST B
+
+CurriculumMap ada tetapi CP kosong.
+
+Generator ATP/KKTP/Modul/Asesmen:
+
+HARUS DIBLOKIR.
+
+TEST C
+
+Masukkan CP test melalui Admin.
+
+Setelah tersimpan:
+
+status berubah menjadi:
+
+"CP Resmi Tersedia"
+
+TEST D
+
+Refresh browser.
+
+CP test tetap ada melalui localStorage.
+
+TEST E
+
+Export CP.
+
+Pastikan JSON valid.
+
+TEST F
+
+Import kembali JSON tersebut.
+
+Pastikan berhasil.
+
+TEST G
+
+Pastikan:
+
+AME
+Daftar Nilai
+
+tetap dapat dibuat walaupun CP kosong.
+
+TEST H
+
+Pastikan tidak ada console error.
+
+==================================================
+22. JANGAN UBAH UI SECARA BESAR
+===============================
+
+Pertahankan tampilan sekarang.
+
+Hanya tambahkan UI minimum untuk:
+
+Kelola CP
+Import CP
+Export CP
+
+Gunakan komponen/style existing.
+
+==================================================
+23. HEMAT KREDIT
+================
+
+Prioritas:
+
+MINIMAL CHANGES
+MINIMAL COMPUTE
+MINIMAL DEPENDENCIES
+
+Jangan:
+
+* rebuild
+* redesign
+* refactor seluruh project
+* membuat dokumentasi panjang
+* membuat unit test framework baru
+* menginstall package yang tidak dibutuhkan
+
+==================================================
+24. SELESAI
+===========
+
+Setelah semuanya berhasil:
+
+STOP.
+
+Jangan melanjutkan ke AI.
+
+Jangan menambahkan fitur lain.
+
+Berikan laporan sangat singkat:
+
+FILES CREATED:
+...
+
+FILES MODIFIED:
+...
+
+IMPLEMENTED:
+...
+
+TEST:
+...
+
+ISSUES:
+...
+
+Kemudian tunggu instruksi berikutnya.
