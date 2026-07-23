@@ -1,0 +1,168 @@
+LANJUTKAN PROJECT EXISTING.
+
+MODE: HEMAT KREDIT / MINIMAL CHANGES.
+
+JANGAN rebuild project.
+JANGAN redesign UI.
+JANGAN install package baru.
+JANGAN membuat dashboard admin.
+JANGAN membuat database.
+JANGAN membuat sistem login baru.
+JANGAN implementasi AI dahulu.
+JANGAN refactor bagian yang sudah bekerja.
+
+TUJUAN:
+Persiapkan aplikasi untuk menerima database CP resmi SMA melalui file data.
+
+1. Pastikan file berikut tersedia:
+
+/data/cp-data.js
+/data/curriculum-map.js
+
+Jika curriculum-map.js belum ada, buat file sederhana.
+
+2. cp-data.js HANYA untuk data resmi:
+
+window.cpData = {
+  // data CP akan diberikan kemudian
+};
+
+JANGAN membuat CP menggunakan AI.
+JANGAN mengisi CP berdasarkan pengetahuan sendiri.
+JANGAN membuat fallback.
+
+3. curriculum-map.js digunakan untuk:
+
+- materi/topik
+- TP
+- semester
+- JP
+- jumlah pertemuan
+- kelas X/XI/XII
+
+Pindahkan data topik existing ke sini HANYA jika diperlukan.
+Jika pemindahan berisiko merusak aplikasi, pertahankan sementara struktur existing.
+
+4. Pastikan mapping:
+
+X = Fase E
+XI = Fase F
+XII = Fase F
+
+Gunakan helper existing getPhaseFromClass().
+
+5. Pastikan tersedia fungsi:
+
+getCPData(mapel, fase)
+hasCPData(mapel, fase)
+getCurriculumData(mapel, kelas)
+
+Tidak boleh ada fallback CP/materi palsu.
+
+6. VALIDASI GENERATOR
+
+Dokumen berikut membutuhkan CP:
+
+- Prota
+- Prosem
+- ATP
+- KKTP
+- Modul Ajar
+- Asesmen
+
+Jika CP belum tersedia:
+
+STOP.
+
+Tampilkan:
+
+"CP resmi untuk mata pelajaran dan fase ini belum tersedia."
+
+AME dan Format Daftar Nilai boleh tetap berjalan tanpa CP.
+
+7. Pemetaan CP & Materi
+
+Jika CP kosong tampilkan:
+
+⚠ CP Resmi Belum Tersedia
+
+Jika CP tersedia tampilkan:
+
+✓ CP Resmi Tersedia
+
+dan:
+
+- Mata Pelajaran
+- Fase
+- CP
+- Elemen CP
+- Sumber regulasi
+
+8. Struktur data CP harus mendukung:
+
+{
+ mapel: "",
+ fase: "",
+ cp: "",
+ elements: [
+   {
+      name: "",
+      cp: ""
+   }
+ ],
+ source: {
+   institution: "",
+   regulation: "",
+   number: "",
+   year: "",
+   status: "active"
+ }
+}
+
+9. JANGAN mengisi teks CP sekarang.
+
+Saya akan memberikan database CP resmi setelah tahap ini.
+
+10. Jangan membuat:
+- Admin CP
+- Import CP
+- Export CP
+- PostgreSQL
+- Supabase
+- Firebase
+- API
+- AI
+- sistem pembayaran
+- akun pengguna baru
+
+11. TEST HANYA:
+
+- aplikasi terbuka
+- tidak ada console error
+- dropdown mapel bekerja
+- kelas X -> Fase E
+- XI -> F
+- XII -> F
+- CP kosong menghasilkan peringatan
+- generator berbasis CP berhenti jika CP kosong
+- AME tetap bekerja
+- Daftar Nilai tetap bekerja
+
+JANGAN melakukan testing berulang yang tidak diperlukan.
+
+Setelah berhasil STOP.
+
+Laporan maksimal:
+
+FILES:
+CHANGES:
+TEST:
+ERROR:
+
+Jangan mengerjakan fitur lain.
+
+PRIORITAS:
+MINIMAL TOKEN.
+MINIMAL COMPUTE.
+MINIMAL FILE CHANGES.
+HEMAT KREDIT REPLIT.

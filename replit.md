@@ -26,10 +26,9 @@ Aplikasi akan tersedia di port 5000 (webview).
 
 ## User preferences
 - Aplikasi khusus jenjang SMA: Kelas X = Fase E, Kelas XI/XII = Fase F.
-- CP resmi menjadi sumber utama; jika CP belum tersedia, aplikasi menampilkan pesan error dan tidak menghasilkan dokumen yang bergantung pada CP (ATP, KKTP, Modul Ajar, Asesmen).
-- Dokumen administratif AME dan Daftar Nilai tetap dapat dibuat walaupun CP masih kosong.
-- Tidak ada fallback data palsu ("Konsep Dasar...", "Analisis Lanjutan...", dsb.).
+- CP resmi menjadi sumber utama dari `data/cp-data.js`; jika CP belum tersedia, aplikasi menampilkan pesan error dan tidak menghasilkan dokumen yang bergantung pada CP (Prota, Prosem, ATP, KKTP, Modul Ajar, Asesmen).
+- Dokumen administratif AME dan Format Daftar Nilai tetap dapat dibuat walaupun CP masih kosong.
+- Tidak ada fallback data palsu, tidak ada admin panel, tidak ada import/export CP, dan tidak ada database/AI.
 - Data CP dipisahkan dari data pemetaan materi.
-- CP default berasal dari `data/cp-data.js` dan dapat ditimpa melalui panel admin; perubahan admin disimpan sementara di `localStorage`.
 - Semua CP resmi saat ini dikosongkan; isi CP akan dimasukkan dari dokumen sumber resmi pada tahap berikutnya.
-- Login admin: `guru` / `merdeka2026` — setelah login muncul tombol **Kelola CP** untuk import/export/mengedit CP.
+- Login: `guru` / `merdeka2026` — hanya untuk mengaktifkan tombol unduh/salin.
