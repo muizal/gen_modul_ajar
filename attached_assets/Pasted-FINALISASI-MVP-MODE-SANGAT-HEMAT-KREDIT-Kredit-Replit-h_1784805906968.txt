@@ -1,0 +1,114 @@
+FINALISASI MVP — MODE SANGAT HEMAT KREDIT.
+
+Kredit Replit hampir habis.
+
+JANGAN:
+- menambah fitur
+- redesign
+- refactor
+- install package baru
+- membuat database
+- membuat dashboard
+- mengubah struktur project
+- membuat dokumentasi
+- memperbaiki hal kosmetik
+
+TUGAS HANYA:
+
+1. Periksa implementasi terakhir.
+
+2. Pastikan aplikasi dapat berjalan tanpa fatal error.
+
+3. Pastikan alur utama bekerja:
+
+Pilih Mapel
+→ Pilih Kelas
+→ Fase otomatis
+→ Ambil CP dari cp-data.js
+→ Pilih Materi
+→ Pilih jumlah pertemuan
+→ Buat Dokumen
+→ jika dokumen AI, panggil POST /api/generate
+→ tampilkan hasil di preview.
+
+4. Pastikan aturan ini tetap berlaku:
+
+Jika CP kosong:
+STOP.
+
+Tampilkan:
+"CP resmi untuk mata pelajaran dan fase ini belum tersedia."
+
+AI DILARANG membuat CP pengganti.
+
+5. Pastikan API key HANYA dibaca dari environment variable:
+
+AI_API_KEY
+
+Jangan hardcode API key.
+
+6. Jika AI_API_KEY belum tersedia, jangan mengubah arsitektur.
+
+Cukup tampilkan:
+"AI API belum dikonfigurasi."
+
+7. Pastikan dokumen lokal existing tetap bekerja dan tidak perlu AI:
+
+- AME
+- Prota
+- Prosem
+- ATP/KKTP jika implementasi existing masih digunakan
+- Daftar Nilai
+
+8. Pastikan AI hanya digunakan untuk fitur yang sudah diimplementasikan seperti:
+
+- Modul Ajar
+- LKPD
+- Asesmen
+
+Jangan menambahkan jenis dokumen AI baru.
+
+9. Jangan membuat panggilan AI otomatis kedua jika hasil gagal.
+
+Satu klik pengguna = maksimal satu request AI.
+
+10. Periksa hanya error yang MENGHALANGI aplikasi berjalan.
+
+Perbaiki hanya:
+- syntax error
+- undefined function
+- missing file/import
+- endpoint /api/generate tidak dapat dipanggil
+- response AI tidak tampil
+- tombol Buat Dokumen tidak bekerja
+
+Abaikan masalah kosmetik.
+
+11. Lakukan SATU pengujian end-to-end minimum.
+
+Jika CP belum tersedia, gunakan data test sementara HANYA untuk pengujian dan jangan menyamarkannya sebagai CP resmi.
+
+Setelah test, jangan memasukkan CP buatan ke database produksi.
+
+12. Jangan melakukan testing berulang.
+
+13. Setelah aplikasi dapat berjalan:
+
+STOP.
+
+Jangan menawarkan implementasi tambahan.
+Jangan melanjutkan coding.
+
+Berikan laporan maksimal:
+
+STATUS:
+AI ENDPOINT:
+SECRET REQUIRED:
+MAIN FLOW:
+BLOCKING ERROR:
+
+PRIORITAS MUTLAK:
+SELESAIKAN MVP DENGAN PERUBAHAN SEKEDAR YANG DIPERLUKAN.
+
+KREDIT REPLIT SUDAH 79%.
+JANGAN MELAKUKAN PEKERJAAN DI LUAR INSTRUKSI.
