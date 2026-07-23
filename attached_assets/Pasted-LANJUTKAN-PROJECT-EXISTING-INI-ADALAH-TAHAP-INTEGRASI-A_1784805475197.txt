@@ -1,0 +1,595 @@
+LANJUTKAN PROJECT EXISTING.
+
+INI ADALAH TAHAP INTEGRASI AI MVP.
+
+KONDISI PENTING:
+Kredit Replit terbatas. Jangan rebuild project dan jangan melakukan pekerjaan di luar instruksi.
+
+PRIORITAS:
+APLIKASI HARUS JADI DAN BERFUNGSI.
+
+==================================================
+ATURAN HEMAT KREDIT
+==================================================
+
+JANGAN:
+- redesign UI
+- rebuild frontend
+- mengganti framework
+- membuat dashboard baru
+- membuat database
+- membuat sistem akun baru
+- membuat sistem pembayaran
+- refactor seluruh project
+- mengubah fitur yang sudah bekerja
+- menginstall package yang tidak diperlukan
+- membuat dokumentasi panjang
+- melakukan testing berulang
+
+Gunakan kode existing sebanyak mungkin.
+
+==================================================
+TUJUAN
+==================================================
+
+Hubungkan generator existing dengan AI sehingga:
+
+CP RESMI dari cp-data.js
+↓
+TP
+↓
+Materi
+↓
+Pertemuan
+↓
+AI
+↓
+Modul Ajar / LKPD / Asesmen
+
+AI DILARANG menentukan atau membuat CP.
+
+==================================================
+1. CP ADALAH SOURCE OF TRUTH
+==================================================
+
+Gunakan:
+
+getCPData(mapel, fase)
+
+atau helper CP existing.
+
+Sebelum memanggil AI:
+
+ambil CP berdasarkan:
+
+mapel
++
+fase
+
+Fase:
+
+X = E
+XI = F
+XII = F
+
+Jika CP tidak tersedia:
+
+STOP.
+
+Tampilkan:
+
+"Dokumen tidak dapat dibuat karena CP resmi belum tersedia."
+
+JANGAN memanggil AI.
+
+==================================================
+2. JANGAN KIRIM PERMINTAAN AI UNTUK MENCARI CP
+==================================================
+
+DILARANG membuat prompt seperti:
+
+"Carikan CP..."
+"Apa CP..."
+"Buat CP..."
+"Tentukan CP..."
+
+CP hanya boleh berasal dari data aplikasi.
+
+AI hanya menerima CP yang sudah tersedia.
+
+==================================================
+3. BUAT BACKEND AI MINIMAL
+==================================================
+
+Gunakan backend/server yang paling sederhana dan kompatibel dengan project existing.
+
+Jangan membuat arsitektur kompleks.
+
+Buat satu endpoint saja:
+
+POST /api/generate
+
+Endpoint menerima:
+
+{
+ jenisDokumen,
+ mapel,
+ kelas,
+ fase,
+ semester,
+ tahunPelajaran,
+ cp,
+ elements,
+ tp,
+ materi,
+ jp,
+ pertemuan,
+ identitas
+}
+
+Jangan membuat endpoint lain jika tidak diperlukan.
+
+==================================================
+4. API KEY
+==================================================
+
+API KEY DILARANG ditulis di:
+
+index.html
+JavaScript frontend
+repository
+source code public
+
+Gunakan Replit Secrets / environment variable.
+
+Gunakan nama:
+
+AI_API_KEY
+
+Jika project sudah mempunyai provider AI, gunakan provider existing.
+
+Jika belum ada provider AI, buat struktur provider yang sederhana dan mudah diganti.
+
+JANGAN hardcode API key.
+
+Jika AI_API_KEY belum tersedia:
+
+tampilkan error yang jelas:
+
+"AI API belum dikonfigurasi."
+
+==================================================
+5. PROVIDER AI
+==================================================
+
+Implementasikan hanya SATU provider.
+
+Jangan membuat multi-provider.
+
+Jika project belum mempunyai provider AI, gunakan API yang paling sederhana dengan fetch() server-side dan environment variable.
+
+Jangan membuat SDK/library tambahan jika REST API dengan fetch sudah cukup.
+
+==================================================
+6. SYSTEM PROMPT AI
+==================================================
+
+Gunakan system instruction yang ketat.
+
+Konsep:
+
+ANDA ADALAH MESIN PENYUSUN DOKUMEN PEMBELAJARAN SMA.
+
+SUMBER KEBENARAN UTAMA ADALAH CAPAIAN PEMBELAJARAN YANG DIKIRIM APLIKASI.
+
+ATURAN:
+
+1. Jangan membuat CP baru.
+2. Jangan mengubah redaksi CP.
+3. Jangan menggunakan CP dari pengetahuan internal model.
+4. Jangan mengganti fase.
+5. Jangan menambahkan kompetensi yang bertentangan dengan CP.
+6. Tujuan Pembelajaran harus dapat ditelusuri ke CP.
+7. Kegiatan pembelajaran harus mendukung TP.
+8. Asesmen harus mengukur TP.
+9. Jika data tidak cukup, nyatakan bahwa data tidak cukup.
+10. Jangan mengarang regulasi.
+11. Jangan mengarang nomor keputusan.
+12. Gunakan Bahasa Indonesia formal untuk dokumen.
+13. Konten Bahasa Inggris boleh digunakan sesuai kebutuhan mata pelajaran.
+14. Hasil harus siap ditampilkan dalam dokumen guru.
+
+==================================================
+7. DATA YANG DIKIRIM KE AI
+==================================================
+
+Susun user prompt secara terstruktur:
+
+CAPAIAN PEMBELAJARAN RESMI:
+{cp}
+
+ELEMEN CP:
+{elements}
+
+MATA PELAJARAN:
+{mapel}
+
+FASE:
+{fase}
+
+KELAS:
+{kelas}
+
+SEMESTER:
+{semester}
+
+TAHUN PELAJARAN:
+{tahunPelajaran}
+
+TUJUAN PEMBELAJARAN:
+{tp}
+
+MATERI:
+{materi}
+
+ALOKASI:
+{jp} JP
+
+JUMLAH PERTEMUAN:
+{pertemuan}
+
+JENIS DOKUMEN:
+{jenisDokumen}
+
+==================================================
+8. MODUL AJAR
+==================================================
+
+Untuk jenis:
+
+Modul Ajar
+
+AI harus menghasilkan modul yang memuat minimal:
+
+A. INFORMASI UMUM
+
+- Identitas
+- Mata Pelajaran
+- Fase/Kelas
+- Semester
+- Materi
+- Alokasi waktu
+- Jumlah pertemuan
+
+B. DASAR PENYUSUNAN
+
+- CP resmi
+- Elemen CP yang relevan
+- Tujuan Pembelajaran
+
+CP harus ditampilkan PERSIS dari data aplikasi.
+
+C. KOMPETENSI AWAL
+
+D. KARAKTERISTIK PESERTA DIDIK
+
+E. DIMENSI PROFIL LULUSAN YANG RELEVAN
+
+F. SARANA DAN PRASARANA
+
+G. MODEL/METODE PEMBELAJARAN
+
+H. TUJUAN PEMBELAJARAN
+
+I. PEMAHAMAN BERMAKNA
+
+J. PERTANYAAN PEMANTIK
+
+K. KEGIATAN PEMBELAJARAN
+
+Pisahkan berdasarkan pertemuan.
+
+Contoh jika 4 pertemuan:
+
+PERTEMUAN 1
+- Pendahuluan
+- Kegiatan inti
+- Penutup
+
+PERTEMUAN 2
+...
+
+PERTEMUAN 3
+...
+
+PERTEMUAN 4
+...
+
+Jangan menggabungkan seluruh pertemuan menjadi satu sesi.
+
+L. ASESMEN
+
+- diagnostik jika relevan
+- formatif
+- sumatif
+
+M. RUBRIK
+
+N. PENGAYAAN
+
+O. REMEDIAL
+
+P. REFLEKSI GURU
+
+Q. REFLEKSI PESERTA DIDIK
+
+R. LAMPIRAN/MATERI PENDUKUNG
+
+==================================================
+9. LKPD
+==================================================
+
+Jika user memilih LKPD:
+
+gunakan CP, TP dan materi yang SAMA.
+
+AI menghasilkan:
+
+- Identitas LKPD
+- Tujuan
+- Petunjuk
+- Materi/stimulus
+- aktivitas siswa
+- pertanyaan/tugas
+- ruang jawaban bila diperlukan
+- refleksi
+
+LKPD harus benar-benar terkait dengan kegiatan pada Modul Ajar.
+
+==================================================
+10. ASESMEN
+==================================================
+
+Jika memilih Asesmen:
+
+hasilkan:
+
+- TP yang diukur
+- indikator
+- bentuk asesmen
+- kisi-kisi
+- instrumen
+- kunci/pedoman jawaban
+- rubrik
+- pedoman penskoran
+
+Jangan membuat asesmen yang tidak mengukur TP.
+
+==================================================
+11. PERTEMUAN
+==================================================
+
+Gunakan jumlah pertemuan yang dipilih pengguna.
+
+Jika:
+
+pertemuan = 4
+
+maka Modul Ajar harus mempunyai:
+
+Pertemuan 1
+Pertemuan 2
+Pertemuan 3
+Pertemuan 4
+
+Setiap pertemuan harus mempunyai tujuan/kegiatan yang progresif.
+
+==================================================
+12. FRONTEND
+==================================================
+
+Gunakan tombol:
+
+"Buat Dokumen"
+
+existing.
+
+Untuk dokumen AI:
+
+tampilkan loading sederhana:
+
+"AI sedang menyusun dokumen berdasarkan CP resmi..."
+
+Disable tombol selama request.
+
+Setelah selesai:
+
+tampilkan hasil pada preview existing.
+
+Jangan membuat halaman preview baru.
+
+==================================================
+13. ERROR HANDLING
+==================================================
+
+Tangani minimal:
+
+CP kosong
+API key kosong
+API gagal
+response kosong
+JSON/error server
+
+Tampilkan pesan yang mudah dipahami.
+
+Jangan membuat error handling framework kompleks.
+
+==================================================
+14. DOKUMEN NON-AI
+==================================================
+
+JANGAN kirim semua dokumen ke AI.
+
+Pertahankan generator lokal untuk:
+
+AME
+Prota
+Prosem
+Daftar Nilai
+
+Jika ATP dan KKTP existing masih bekerja dengan baik, pertahankan dulu.
+
+Prioritas AI tahap ini:
+
+1. Modul Ajar
+2. LKPD
+3. Asesmen
+
+==================================================
+15. JANGAN HAPUS GENERATOR EXISTING
+==================================================
+
+Jika AI gagal, jangan merusak fungsi:
+
+AME
+Prota
+Prosem
+ATP
+KKTP
+Nilai
+PDF
+Word
+Excel
+Login
+Preview
+
+==================================================
+16. OUTPUT AI
+==================================================
+
+Gunakan format output yang mudah dimasukkan ke:
+
+#output-modul
+
+Prefer HTML terstruktur sederhana:
+
+<h1>
+<h2>
+<h3>
+<p>
+<ul>
+<li>
+<table>
+
+Jangan izinkan AI menghasilkan:
+
+<script>
+<iframe>
+javascript:
+event handler HTML
+
+Sanitize output sebelum memasukkan ke DOM.
+
+Jika sanitization library belum tersedia, lakukan whitelist/tag stripping sederhana server/client-side tanpa menambah package besar.
+
+==================================================
+17. VALIDASI DASAR OUTPUT
+==================================================
+
+Sebelum menampilkan hasil AI, cek minimal:
+
+response tidak kosong
+
+dan response mengandung:
+
+Capaian Pembelajaran
+Tujuan Pembelajaran
+Kegiatan Pembelajaran
+Asesmen
+
+Jika tidak:
+
+tampilkan error:
+
+"Hasil AI belum memenuhi struktur dokumen. Silakan coba kembali."
+
+Jangan melakukan panggilan AI kedua otomatis karena akan memboroskan API/kredit.
+
+==================================================
+18. JANGAN IMPLEMENTASIKAN FITUR LAIN
+==================================================
+
+JANGAN membuat:
+
+Admin dashboard
+database cloud
+payment
+subscription
+email
+Google login
+analytics
+chatbot
+multi AI provider
+history dokumen
+cloud storage
+collaboration
+mobile app
+
+Semua ditunda.
+
+==================================================
+19. TEST MINIMUM
+==================================================
+
+Lakukan test minimum saja:
+
+TEST 1:
+Aplikasi terbuka tanpa console error.
+
+TEST 2:
+CP kosong -> AI tidak dipanggil.
+
+TEST 3:
+API key kosong -> pesan konfigurasi muncul.
+
+TEST 4:
+CP tersedia -> request /api/generate dapat dikirim.
+
+TEST 5:
+response muncul pada preview existing.
+
+TEST 6:
+fitur non-AI existing tetap berjalan.
+
+Jangan melakukan test berulang.
+
+==================================================
+20. SELESAI
+==================================================
+
+Setelah endpoint AI dan koneksi frontend selesai:
+
+STOP.
+
+Jangan melanjutkan fitur lain.
+
+Jangan redesign.
+
+Jangan refactor.
+
+Berikan laporan maksimal:
+
+FILES CREATED:
+FILES MODIFIED:
+AI ENDPOINT:
+SECRET REQUIRED:
+TEST RESULT:
+ERROR:
+
+PENTING:
+
+KREDIT REPLIT SUDAH TERPAKAI >60%.
+
+KERJAKAN IMPLEMENTASI MINIMAL YANG BERFUNGSI.
+
+JANGAN MENGHABISKAN KREDIT UNTUK PENYEMPURNAAN KOSMETIK.
