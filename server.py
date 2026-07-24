@@ -12,6 +12,7 @@ import json
 import os
 import re
 import ssl
+import tempfile
 import time
 import urllib.request
 from http.server import HTTPServer, SimpleHTTPRequestHandler
@@ -441,6 +442,133 @@ class RequestHandler(SimpleHTTPRequestHandler):
             storage.setdefault(mapel, {})[fase] = entry
             save_storage(storage)
             self.send_json({"ok": True, "entry": entry})
+            return
+
+        if parsed.path == "/api/admin/cp/upload":
+            # PDF upload endpoint — admin-only, single multipart field "file".
+            # Extracts text on the server and returns it to the client as a
+            # preview. Never persists the PDF or the extracted text here; the
+            # client reviews and submits via existing POST /api/admin/cp.
+            if not is_admin(self):
+                self.send_json({"error": "Unauthorized"}, status=401)
+                return
+            ctype_raw = self.headers.get("Content-Type") or ""
+            ctype_lc = ctype_raw.lower()
+            if not ctype_lc.startswith("multipart/form-data"):
+                self.send_json({"error": "multipart/form-data wajib."}, status=400)
+                return
+            # Extract boundary parameter (case-sensitive: it must match the
+            # exact bytes used as the part delimiter in the body, which the
+            # client also keeps unchanged).
+            boundary = None
+            for part in ctype_raw.split(";"):
+                part_stripped = part.strip()
+                if part_stripped.lower().startswith("boundary="):
+                    boundary = part_stripped.split("=", 1)[1].strip().strip('"')
+            if not boundary:
+                self.send_json({"error": "Boundary multipart/form-data tidak ditemukan."}, status=400)
+                return
+            length = int(self.headers.get("Content-Length", "0") or "0")
+            if length <= 0:
+                self.send_json({"error": "Body kosong."}, status=400)
+                return
+            raw_body = self.rfile.read(length)
+
+            # Manual multipart parser: split on the boundary delimiter, then for
+            # each part slice header/body at the first blank line and decode
+            # the binary payload as-is. Avoids stdlib cgi (removed in 3.13)
+            # and email.parser complexity for our simple "single file upload"
+            # needs.
+            sep = ("--" + boundary).encode("latin-1")
+            chunks = raw_body.split(sep)
+            raw = None
+            original = None
+            for chunk in chunks:
+                if not chunk or chunk.startswith(b"--") or chunk.strip() == b"":
+                    continue
+                if chunk.startswith(b"\r\n"):
+                    chunk = chunk[2:]
+                if b"\r\n\r\n" not in chunk:
+                    continue
+                header_blob, _, payload = chunk.partition(b"\r\n\r\n")
+                payload = payload.rstrip(b"\r\n")
+                headers = {}
+                for line in header_blob.split(b"\r\n"):
+                    if b":" in line:
+                        k, _, v = line.partition(b":")
+                        headers[k.decode("latin-1").strip().lower()] = v.decode("latin-1").strip()
+                disp = headers.get("content-disposition", "")
+                if "form-data" not in disp.lower():
+                    continue
+                fname = None
+                for token in disp.split(";"):
+                    token = token.strip()
+                    if token.lower().startswith("filename="):
+                        v = token.split("=", 1)[1].strip().strip('"')
+                        if v:
+                            fname = v
+                if fname is None:
+                    continue
+                raw = payload
+                original = os.path.basename(fname) or "upload.pdf"
+                break
+            if raw is None or original is None:
+                self.send_json({"error": "Field 'file' wajib diunggah."}, status=400)
+                return
+            if not original.lower().endswith(".pdf"):
+                self.send_json({"error": "Hanya file berekstensi .pdf yang diterima."}, status=400)
+                return
+            if not raw or len(raw) < 4 or not raw.startswith(b"%PDF"):
+                self.send_json({"error": "Berkas tidak tampak seperti PDF yang valid."}, status=400)
+                return
+            if len(raw) > 10 * 1024 * 1024:
+                self.send_json({"error": "Ukuran PDF melebihi 10 MB."}, status=413)
+                return
+
+            tmp_path = None
+            try:
+                with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
+                    tmp_path = tmp.name
+                    tmp.write(raw)
+                try:
+                    from pypdf import PdfReader  # imported lazily; lightweight dep
+                except Exception as e:
+                    self.send_json({"error": f"PDF parser tidak tersedia: {e}"}, status=500)
+                    return
+                try:
+                    reader = PdfReader(tmp_path)
+                    page_text = []
+                    for page in reader.pages:
+                        try:
+                            page_text.append(page.extract_text() or "")
+                        except Exception:
+                            page_text.append("")
+                    text = "\n".join(page_text)
+                except Exception as e:
+                    self.send_json({"error": f"Gagal membaca PDF: {e}"}, status=400)
+                    return
+            finally:
+                if tmp_path:
+                    try:
+                        os.unlink(tmp_path)
+                    except Exception:
+                        pass
+
+            # Deterministic cleanup: collapse spaces and excessive blank lines.
+            # We do not paraphrase or alter substantive wording.
+            cleaned = re.sub(r"[ \t]+", " ", text)
+            cleaned = re.sub(r"\n[ \t]+", "\n", cleaned)
+            cleaned = re.sub(r"\n{3,}", "\n\n", cleaned).strip()
+            warning = None
+            if not cleaned:
+                warning = "PDF kemungkinan berupa hasil scan (tanpa text layer). Teks tidak dapat dibaca otomatis. Silakan masukkan CP secara manual."
+            self.send_json({
+                "filename": original,
+                "size": len(raw),
+                "char_count": len(cleaned),
+                "text": cleaned,
+                "warning": warning,
+            })
             return
 
         if parsed.path == "/api/generate":

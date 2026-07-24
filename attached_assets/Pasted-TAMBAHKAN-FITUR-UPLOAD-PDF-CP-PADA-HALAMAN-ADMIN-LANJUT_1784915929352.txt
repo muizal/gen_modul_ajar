@@ -1,0 +1,533 @@
+TAMBAHKAN FITUR UPLOAD PDF CP PADA HALAMAN ADMIN
+
+LANJUTKAN IMPLEMENTASI KELOLA CP EXISTING.
+
+JANGAN redesign.
+JANGAN membuat ulang halaman Admin.
+JANGAN mengubah login.
+JANGAN mengubah generator.
+JANGAN mengubah AI endpoint kecuali diperlukan untuk integrasi CP.
+
+Tambahkan fitur:
+
+UPLOAD PDF CAPAIAN PEMBELAJARAN
+
+pada halaman:
+
+Admin → Kelola CP
+
+==================================================
+1. TUJUAN
+==================================================
+
+Admin harus mempunyai 2 cara memasukkan CP:
+
+A. INPUT MANUAL
+B. UPLOAD PDF CP
+
+Tampilkan pada form Kelola CP:
+
+[ Input Manual ]
+[ Upload PDF ]
+
+==================================================
+2. UPLOAD PDF
+==================================================
+
+Pada mode Upload PDF sediakan:
+
+Mata Pelajaran:
+[dropdown]
+
+Fase:
+[ E / F ]
+
+File CP:
+[ Pilih PDF ]
+
+[ Upload & Baca PDF ]
+
+Hanya izinkan:
+
+.pdf
+
+Batasi ukuran file secara wajar, misalnya 10 MB.
+
+==================================================
+3. ATURAN SUMBER CP
+==================================================
+
+Tetap gunakan aturan aplikasi:
+
+MAPEL AGAMA DAN BUDI PEKERTI
+→ CP Tahun 2026
+→ Keputusan Kepala BKPDM Nomor 020 Tahun 2026
+
+MAPEL UMUM / NON-AGAMA
+→ CP Tahun 2025
+→ Keputusan Kepala BSKAP Nomor 046/H/KR/2025
+
+Ketika mapel dipilih:
+
+tahun dan regulasi terisi otomatis.
+
+Admin tidak perlu mengetiknya.
+
+==================================================
+4. UPLOAD KE BACKEND
+==================================================
+
+PDF harus dikirim ke BACKEND.
+
+Jangan menyimpan PDF sebagai base64 di localStorage.
+
+Gunakan endpoint existing jika sesuai.
+
+Jika belum ada, buat hanya SATU endpoint minimal:
+
+POST /api/admin/cp/upload
+
+Endpoint wajib:
+
+- memeriksa session
+- memastikan role === admin
+- memastikan file PDF
+- memastikan ukuran valid
+- mengekstrak teks PDF
+
+Jangan izinkan pengguna non-admin menggunakan endpoint upload.
+
+==================================================
+5. EKSTRAKSI PDF
+==================================================
+
+Gunakan parser PDF server-side yang ringan dan kompatibel dengan
+project Python existing.
+
+Jika library PDF yang sesuai SUDAH tersedia, gunakan itu.
+
+Jika belum tersedia, install hanya SATU dependency ringan yang
+benar-benar diperlukan untuk membaca teks PDF.
+
+Jangan install framework besar.
+
+==================================================
+6. PDF BUKAN OTOMATIS CP
+==================================================
+
+SANGAT PENTING:
+
+Hasil ekstraksi PDF JANGAN langsung dimasukkan ke database sebagai CP.
+
+Alurnya wajib:
+
+PDF
+↓
+Extract Text
+↓
+Preview
+↓
+Admin Review/Edit
+↓
+Simpan CP
+↓
+Persistent Storage
+
+Admin harus menyetujui teks terlebih dahulu.
+
+==================================================
+7. PREVIEW HASIL EKSTRAKSI
+==================================================
+
+Setelah PDF berhasil dibaca tampilkan:
+
+HASIL EKSTRAKSI PDF
+
+Nama file:
+...
+
+Mapel:
+...
+
+Fase:
+...
+
+Tahun:
+...
+
+Regulasi:
+...
+
+Kemudian:
+
+Capaian Pembelajaran:
+
+[textarea editable]
+
+Elemen CP:
+
+[area pengelolaan elemen]
+
+Admin boleh memperbaiki hasil ekstraksi.
+
+==================================================
+8. JANGAN MINTA AI MENGARANG CP
+==================================================
+
+AI DILARANG:
+
+- membuat CP yang hilang
+- melengkapi CP berdasarkan pengetahuan model
+- memperbaiki substansi CP
+- mengganti redaksi CP
+- menentukan CP sendiri
+
+PDF adalah sumber teks.
+
+Jika teks tidak dapat diekstrak:
+
+tampilkan:
+
+"Teks PDF tidak dapat diekstrak secara otomatis. Silakan masukkan CP secara manual."
+
+Jangan mengarang teks pengganti.
+
+==================================================
+9. PDF SCAN
+==================================================
+
+Jika PDF ternyata berupa scan/gambar dan tidak mempunyai text layer:
+
+JANGAN menganggap ekstraksi kosong sebagai error CP.
+
+Tampilkan:
+
+"PDF kemungkinan berupa hasil scan sehingga teks tidak dapat dibaca otomatis."
+
+Untuk MVP:
+
+arahkan Admin menggunakan Input Manual.
+
+JANGAN menambahkan OCR kompleks pada tahap ini kecuali project
+sudah mempunyai kemampuan OCR.
+
+==================================================
+10. DETEKSI TEKS CP
+==================================================
+
+Jika memungkinkan secara deterministik, bantu membersihkan:
+
+- header berulang
+- footer
+- nomor halaman
+- spasi/baris berlebihan
+
+Tetapi JANGAN mengubah substansi kalimat CP.
+
+Jangan menggunakan AI untuk menulis ulang CP.
+
+==================================================
+11. ELEMEN CP
+==================================================
+
+Setelah ekstraksi, Admin harus dapat menentukan elemen CP.
+
+Sediakan:
+
+[ + Tambah Elemen ]
+
+Setiap elemen:
+
+Nama Elemen
+[................]
+
+CP Elemen
+[textarea]
+
+[Hapus]
+
+Admin dapat menambah beberapa elemen.
+
+==================================================
+12. OPSIONAL: BANTU DETEKSI ELEMEN
+==================================================
+
+Jika struktur PDF memungkinkan deteksi heading secara deterministik,
+boleh bantu memisahkan elemen.
+
+Tetapi hasilnya harus berstatus:
+
+"Draf hasil ekstraksi"
+
+Admin tetap harus review sebelum Simpan.
+
+Jangan otomatis menyatakan hasil tersebut sebagai CP resmi.
+
+==================================================
+13. TOMBOL SIMPAN
+==================================================
+
+Setelah Admin selesai review:
+
+[ Simpan CP ]
+
+Backend melakukan:
+
+validasi
+↓
+INSERT/UPDATE persistent storage
+↓
+return success
+
+Tampilkan:
+
+"✓ CP berhasil disimpan."
+
+==================================================
+14. DUPLIKAT
+==================================================
+
+Gunakan:
+
+mapel + fase
+
+sebagai kombinasi unik.
+
+Jika CP untuk kombinasi tersebut sudah ada:
+
+tampilkan konfirmasi:
+
+"CP untuk mata pelajaran dan fase ini sudah tersedia. Apakah Anda ingin memperbaruinya?"
+
+Jika Admin setuju:
+
+UPDATE.
+
+Jangan membuat duplikat.
+
+==================================================
+15. SIMPAN INFORMASI SUMBER
+==================================================
+
+Selain teks CP, simpan metadata:
+
+mapel
+fase
+tahun
+regulasi
+source_type = "pdf"
+source_filename
+cp
+elements
+created_at
+updated_at
+
+Jangan mengandalkan nama file sebagai bukti regulasi.
+
+Regulasi tetap ditentukan oleh aturan mapel 2025/2026 aplikasi.
+
+==================================================
+16. PENYIMPANAN PDF
+==================================================
+
+Prioritas utama adalah menyimpan DATA CP, bukan file PDF.
+
+Tidak wajib menyimpan PDF asli secara permanen.
+
+Jika penyimpanan file persisten existing tersedia dan mudah digunakan,
+boleh simpan file sumber.
+
+Jika tidak:
+
+hapus temporary PDF setelah ekstraksi.
+
+Jangan membebani storage hanya untuk menyimpan PDF.
+
+==================================================
+17. KEAMANAN FILE
+==================================================
+
+Validasi:
+
+- extension .pdf
+- MIME type PDF jika tersedia
+- ukuran file
+- nama file aman
+
+Jangan menjalankan isi file.
+
+Gunakan temporary filename/server-side safe filename.
+
+Hanya Admin boleh upload.
+
+==================================================
+18. DAFTAR CP
+==================================================
+
+Setelah berhasil disimpan:
+
+CP langsung muncul pada:
+
+Admin → Daftar CP
+
+Tampilkan minimal:
+
+Mapel
+Fase
+Tahun
+Regulasi
+Sumber
+Status
+Aksi
+
+Sumber dapat menampilkan:
+
+PDF
+
+atau:
+
+Manual
+
+==================================================
+19. GENERATOR LANGSUNG MEMBACA
+==================================================
+
+Setelah Admin menyimpan CP hasil PDF:
+
+TIDAK perlu:
+
+- restart
+- edit cp-data.js
+- menjalankan Agent
+- push GitHub
+- publish ulang
+
+Generator harus langsung membaca CP dari persistent storage.
+
+==================================================
+20. TEST WAJIB
+==================================================
+
+TEST 1:
+Login Admin.
+
+TEST 2:
+Upload satu PDF CP yang mempunyai text layer.
+
+TEST 3:
+Pastikan teks berhasil muncul pada preview.
+
+TEST 4:
+Edit sedikit hasil preview jika diperlukan.
+
+TEST 5:
+Simpan.
+
+TEST 6:
+Refresh halaman.
+
+CP harus tetap ada.
+
+TEST 7:
+Buka Generator.
+
+Pilih mapel/fase tersebut.
+
+Generator harus menemukan CP.
+
+TEST 8:
+Restart server.
+
+CP harus tetap tersedia.
+
+==================================================
+21. JANGAN SENTUH FITUR LAIN
+==================================================
+
+JANGAN mengubah:
+
+Login
+Kelola CP authorization
+AI_API_KEY
+Generator existing
+Modul Ajar
+LKPD
+Asesmen
+ATP
+KKTP
+Prota
+Prosem
+AME
+Daftar Nilai
+PDF/Word/Excel export
+
+kecuali perubahan minimum untuk integrasi CP.
+
+==================================================
+22. HASIL AKHIR
+==================================================
+
+Target halaman Admin:
+
+KELOLA CP
+
+[ Input Manual ] [ Upload PDF ]
+
+Mata Pelajaran
+Fase
+
+Tahun CP: otomatis
+Regulasi: otomatis
+
+Upload PDF:
+[ Choose File ]
+
+[ Upload & Baca PDF ]
+
+----------------------------
+
+PREVIEW HASIL EKSTRAKSI
+
+CP:
+[ textarea editable ]
+
+ELEMEN CP:
+
+[ Nama Elemen ]
+[ CP Elemen ]
+
+[ + Tambah Elemen ]
+
+[ Simpan CP ]
+
+==================================================
+23. STOP
+==================================================
+
+Setelah:
+
+UPLOAD PDF
+→ EXTRACT
+→ PREVIEW
+→ ADMIN REVIEW
+→ SAVE
+→ PERSISTENT STORAGE
+→ GENERATOR READ
+
+berhasil:
+
+STOP.
+
+Jangan menambah fitur.
+
+Laporan:
+
+PDF UPLOAD:
+PDF EXTRACTION:
+ADMIN REVIEW:
+CP SAVE:
+PERSISTENT AFTER REFRESH:
+PERSISTENT AFTER RESTART:
+GENERATOR READ:
+SECURITY:
+ERROR:
