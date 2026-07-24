@@ -137,14 +137,20 @@ def validate_ai_output(html: str):
     if not html or not html.strip():
         return False, ["output kosong"]
     lowered = html.lower()
+    kegiatan_terms = (
+        "kegiatan pembelajaran",
+        "langkah-langkah pembelajaran",
+        "langkah pembelajaran",
+        "kegiatan belajar",
+        "aktivitas pembelajaran",
+        "sintaks",
+    )
+    asesmen_terms = ("asesmen", "penilaian", "evaluasi", "assessment")
     checks = {
         "capaian pembelajaran": "capaian pembelajaran" in lowered,
         "tujuan pembelajaran": "tujuan pembelajaran" in lowered,
-        "kegiatan pembelajaran": (
-            "kegiatan pembelajaran" in lowered
-            or "langkah-langkah pembelajaran" in lowered
-        ),
-        "asesmen": ("asesmen" in lowered or "penilaian" in lowered),
+        "kegiatan pembelajaran": any(t in lowered for t in kegiatan_terms),
+        "asesmen": any(t in lowered for t in asesmen_terms),
     }
     missing = [name for name, present in checks.items() if not present]
     return (not missing), missing

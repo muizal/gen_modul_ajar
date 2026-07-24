@@ -78,6 +78,9 @@
             <button onclick="switchTab('tab-generator')" id="btn-generator" class="tab-btn px-8 py-3 rounded-full font-bold transition-all duration-300 bg-white text-slate-600 shadow border border-slate-200 hover:bg-slate-50 hover:-translate-y-1">
                 <i class="fas fa-magic mr-2"></i>Generator Instrumen
             </button>
+            <button onclick="switchTab('tab-admin')" id="btn-admin" class="tab-btn hidden px-8 py-3 rounded-full font-bold transition-all duration-300 bg-white text-slate-600 shadow border border-slate-200 hover:bg-slate-50 hover:-translate-y-1">
+                <i class="fas fa-shield-alt mr-2"></i>Kelola CP
+            </button>
         </div>
 
         <div id="tab-pemetaan" class="tab-content block transition-all duration-500 animate-fade-in">
@@ -94,6 +97,134 @@
                     </select>
                 </div>
                 <div id="pemetaan-result" class="hidden animate-fade-in"></div>
+            </div>
+        </div>
+
+        <div id="tab-admin" class="tab-content hidden transition-all duration-500 animate-fade-in">
+            <div class="glass-card rounded-3xl p-6 md:p-10 max-w-6xl mx-auto">
+                <div class="flex items-center gap-3 mb-6">
+                    <div class="bg-indigo-100 p-3 rounded-xl text-indigo-600"><i class="fas fa-shield-alt text-xl"></i></div>
+                    <div>
+                        <h2 class="text-2xl font-bold text-slate-800">Kelola Capaian Pembelajaran</h2>
+                        <p class="text-sm text-slate-500">CP resmi Kurikulum Merdeka. Tahun dan regulasi ditentukan otomatis berdasarkan kategori mapel.</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <div class="bg-green-50 p-4 rounded-xl border border-green-200">
+                        <p class="text-xs text-green-700 font-bold uppercase">CP Tersedia</p>
+                        <p id="admin-stat-ada" class="text-2xl font-extrabold text-green-700">0</p>
+                    </div>
+                    <div class="bg-amber-50 p-4 rounded-xl border border-amber-200">
+                        <p class="text-xs text-amber-700 font-bold uppercase">CP Belum Tersedia</p>
+                        <p id="admin-stat-kurang" class="text-2xl font-extrabold text-amber-700">0</p>
+                    </div>
+                    <div class="bg-blue-50 p-4 rounded-xl border border-blue-200">
+                        <p class="text-xs text-blue-700 font-bold uppercase">Per Fase</p>
+                        <p class="text-sm text-slate-700 mt-1">Fase E: <span id="admin-stat-e" class="font-bold">0</span> | Fase F: <span id="admin-stat-f" class="font-bold">0</span></p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    <div class="lg:col-span-7">
+                        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm">
+                            <div class="px-5 py-4 border-b bg-slate-50 rounded-t-2xl">
+                                <h3 class="font-bold text-slate-800">Daftar CP</h3>
+                                <p class="text-xs text-slate-500">Klik edit untuk mengubah, atau hapus untuk menghapus.</p>
+                            </div>
+                            <div id="admin-cp-list" class="p-5 overflow-x-auto">
+                                <p class="text-sm text-slate-500">Memuat...</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="lg:col-span-5">
+                        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm">
+                            <div class="px-5 py-4 border-b bg-slate-50 rounded-t-2xl">
+                                <h3 id="admin-form-title" class="font-bold text-slate-800">Tambah CP</h3>
+                                <p class="text-xs text-slate-500">Tahun & regulasi otomatis sesuai kategori mapel.</p>
+                            </div>
+                            <div class="p-5 space-y-4">
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-700 mb-1">Mata Pelajaran</label>
+                                    <select id="admin-cp-mapel" onchange="adminFormAutoFill()" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 outline-none">
+                                        <option value="" disabled selected>-- Pilih Mapel --</option>
+                                        <optgroup label="Pendidikan Agama (Tahun 2026 / BKPDM No. 020)">
+                                            <option value="PAI">Pendidikan Agama Islam</option>
+                                            <option value="PAK">Pendidikan Agama Kristen</option>
+                                            <option value="Katolik">Pendidikan Agama Katolik</option>
+                                            <option value="Hindu">Pendidikan Agama Hindu</option>
+                                            <option value="Buddha">Pendidikan Agama Buddha</option>
+                                        </optgroup>
+                                        <optgroup label="Umum (Tahun 2025 / BSKAP No. 046/H/KR/2025)">
+                                            <option value="Pancasila">Pendidikan Pancasila</option>
+                                            <option value="B.Indonesia">Bahasa Indonesia</option>
+                                            <option value="Matematika">Matematika</option>
+                                            <option value="B.Inggris">Bahasa Inggris</option>
+                                            <option value="Sejarah">Sejarah</option>
+                                            <option value="PJOK">PJOK</option>
+                                        </optgroup>
+                                        <optgroup label="MIPA & IPS">
+                                            <option value="Fisika">Fisika</option>
+                                            <option value="Kimia">Kimia</option>
+                                            <option value="Biologi">Biologi</option>
+                                            <option value="Geografi">Geografi</option>
+                                            <option value="Sosiologi">Sosiologi</option>
+                                            <option value="Ekonomi">Ekonomi</option>
+                                        </optgroup>
+                                        <optgroup label="Mata Pelajaran Tingkat Lanjut">
+                                            <option value="Matematika Lanjut">Matematika Tingkat Lanjut</option>
+                                            <option value="B.Inggris Lanjut">Bahasa Inggris Tingkat Lanjut</option>
+                                            <option value="Fisika Lanjut">Fisika Tingkat Lanjut</option>
+                                        </optgroup>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-700 mb-1">Fase</label>
+                                    <select id="admin-cp-fase" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 outline-none">
+                                        <option value="E">E (Kelas X)</option>
+                                        <option value="F">F (Kelas XI & XII)</option>
+                                    </select>
+                                </div>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label class="block text-xs font-semibold text-slate-700 mb-1">Tahun CP</label>
+                                        <input id="admin-cp-year" readonly class="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 bg-slate-100 text-slate-700 cursor-not-allowed">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-semibold text-slate-700 mb-1">Regulasi</label>
+                                        <input id="admin-cp-reg" readonly class="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 bg-slate-100 text-slate-700 cursor-not-allowed">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-700 mb-1">Capaian Pembelajaran</label>
+                                    <textarea id="admin-cp-text" rows="4" placeholder="Tempel / tulis redaksi CP resmi di sini." class="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 outline-none"></textarea>
+                                </div>
+                                <div>
+                                    <div class="flex items-center justify-between mb-2">
+                                        <label class="block text-xs font-semibold text-slate-700">Elemen CP</label>
+                                        <button type="button" onclick="adminTambahElemen()" class="text-xs font-bold text-indigo-700 hover:text-indigo-900"><i class="fas fa-plus mr-1"></i> Tambah Elemen</button>
+                                    </div>
+                                    <div id="admin-cp-elements" class="space-y-2"></div>
+                                </div>
+                                <div class="border-t border-slate-100 pt-4 space-y-2">
+                                    <label class="block text-xs font-semibold text-slate-700">Import JSON CP (opsional)</label>
+                                    <textarea id="admin-cp-json" rows="3" placeholder='{"mapel":"...","fase":"E","cp":"...","elements":[{"name":"...","cp":"..."}]}' class="w-full px-3 py-2 text-xs rounded-lg border border-slate-200 outline-none font-mono"></textarea>
+                                    <div class="flex gap-2">
+                                        <button type="button" onclick="adminImportJson()" class="text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 py-2 px-3 rounded-lg transition-colors flex items-center gap-1"><i class="fas fa-file-upload"></i> Isi dari JSON</button>
+                                        <button type="button" onclick="adminLoadFile()" class="text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 py-2 px-3 rounded-lg transition-colors flex items-center gap-1"><i class="fas fa-paperclip"></i> Baca File (.txt)</button>
+                                        <input id="admin-cp-file" type="file" accept=".txt,.json" class="hidden">
+                                    </div>
+                                    <p class="text-xs text-slate-500">Upload PDF/DOCX belum didukung pada tahap ini. Gunakan TXT, paste manual, atau JSON.</p>
+                                </div>
+                                <div class="flex gap-2 pt-2">
+                                    <button id="admin-save" onclick="adminSaveCp()" class="flex-1 py-3 rounded-xl font-bold text-white bg-gradient-to-r from-secondary to-accent shadow-lg hover:-translate-y-1 transition-all flex items-center justify-center gap-2"><i class="fas fa-save"></i> Simpan CP</button>
+                                    <button id="admin-cancel" onclick="adminResetForm()" class="hidden px-4 py-3 rounded-xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-all">Batal</button>
+                                </div>
+                                <p id="admin-form-msg" class="text-sm hidden font-medium text-center py-2 rounded-lg"></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -269,19 +400,16 @@
         <div class="bg-white rounded-3xl p-8 max-w-md w-full mx-4 shadow-2xl relative animate-fade-in">
             <button onclick="toggleLoginModal(false)" class="absolute top-4 right-4 text-slate-400 hover:text-red-500 transition-colors"><i class="fas fa-times text-xl"></i></button>
             <div class="text-center mb-6">
-                <div class="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 text-blue-600"><i class="fas fa-user-lock text-2xl"></i></div>
-                <h3 class="text-2xl font-bold text-slate-800">Akses Terkunci</h3>
-                <p class="text-sm text-slate-500 mt-2">Masuk (login) terlebih dahulu untuk mengunduh Word/Excel/PDF atau menyalin dokumen ini.</p>
+                <div class="bg-indigo-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 text-indigo-600"><i class="fas fa-user-shield text-2xl"></i></div>
+                <h3 class="text-2xl font-bold text-slate-800">Login Admin</h3>
+                <p class="text-sm text-slate-500 mt-2">Masukkan kredensial administrator. Akun ini digunakan untuk mengelola Capaian Pembelajaran dan membuka akses unduh generator.</p>
             </div>
-            
             <div class="space-y-4 mb-6">
-                <input type="text" id="login-username" placeholder="Username" class="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:border-blue-500">
-                <input type="password" id="login-password" placeholder="Password" class="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:border-blue-500">
+                <input type="text" id="login-username" placeholder="Username Admin" class="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:border-indigo-500">
+                <input type="password" id="login-password" placeholder="Password Admin" class="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:border-indigo-500">
                 <p id="login-error" class="text-red-500 text-sm hidden font-medium text-center bg-red-50 py-2 rounded-lg">Username atau Password salah!</p>
-                <button onclick="processLogin()" class="w-full py-3 rounded-xl font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-lg transition-all">Masuk Sekarang</button>
-            </div>
-            <div class="text-center pt-4 border-t border-slate-100">
-                <a href="https://wa.me/6282199689552?text=Halo%20Admin,%20saya%20butuh%20akses%20login%20Generator." target="_blank" class="text-sm font-semibold text-green-600 hover:underline"><i class="fab fa-whatsapp"></i> Hubungi Admin via WA</a>
+                <p id="login-secrets-missing" class="text-amber-700 text-sm hidden font-medium text-center bg-amber-50 py-2 rounded-lg">Admin Secrets belum dikonfigurasi. Hubungi administrator Replit.</p>
+                <button id="login-submit" onclick="processLogin()" class="w-full py-3 rounded-xl font-bold text-white bg-indigo-600 hover:bg-indigo-700 shadow-lg transition-all">Masuk Sekarang</button>
             </div>
         </div>
     </div>
@@ -317,6 +445,9 @@
         // Aplikasi khusus SMA: Kelas X = Fase E, Kelas XI = Fase F, Kelas XII = Fase F.
         // Temporary client-side storage. Replace with server database before production multi-user deployment.
 
+        // Overlay storage populated by admin CP management (/api/admin/cp).
+        window.cpAdmin = window.cpAdmin || {};
+
         function getPhaseFromClass(kelas) {
             if (kelas === 'X') return 'E';
             if (kelas === 'XI' || kelas === 'XII') return 'F';
@@ -325,6 +456,8 @@
 
         function getCPData(mapel, fase) {
             if (!mapel || !fase) return null;
+            const adminEntry = window.cpAdmin && window.cpAdmin[mapel] && window.cpAdmin[mapel][fase];
+            if (adminEntry && (adminEntry.cp || '').trim() !== '') return adminEntry;
             if (window.cpData && window.cpData[mapel] && window.cpData[mapel][fase]) {
                 return window.cpData[mapel][fase];
             }
@@ -981,32 +1114,313 @@
         }
 
         // --- STREAMING_CHUNK:Logika Autentikasi dan Ekspor Dokumen Microsoft Office ---
-        let isLoggedIn = localStorage.getItem('isAuth') === 'true';
-        window.addEventListener('DOMContentLoaded', () => { updateAuthUI(); });
+        let isAdmin = false;
+        let isLoggedIn = false;
+        window.addEventListener('DOMContentLoaded', () => { refreshAdminSession(); });
 
         function updateAuthUI() {
             const btn = document.getElementById('auth-btn');
-            if(isLoggedIn) {
-                btn.innerHTML = '<i class="fas fa-sign-out-alt"></i> Logout Akun';
-                btn.classList.replace('text-slate-700', 'text-red-600');
+            const adminBtn = document.getElementById('btn-admin');
+            if(isAdmin) {
+                btn.innerHTML = '<i class="fas fa-sign-out-alt"></i> Logout Admin';
+                btn.classList.remove('text-slate-700'); btn.classList.add('text-red-600');
+                if (adminBtn) adminBtn.classList.remove('hidden');
             } else {
-                btn.innerHTML = '<i class="fas fa-lock"></i> Login Akses';
-                btn.classList.replace('text-red-600', 'text-slate-700');
+                btn.innerHTML = '<i class="fas fa-lock"></i> Login Admin';
+                btn.classList.remove('text-red-600'); btn.classList.add('text-slate-700');
+                if (adminBtn) adminBtn.classList.add('hidden');
             }
         }
 
         window.toggleLoginModal = function(show) {
             const modal = document.getElementById('login-modal');
-            if(show) { modal.classList.remove('hidden'); document.getElementById('login-error').classList.add('hidden'); }
+            const err = document.getElementById('login-error');
+            const secretsMissing = document.getElementById('login-secrets-missing');
+            if(show) {
+                modal.classList.remove('hidden');
+                if (err) err.classList.add('hidden');
+                if (secretsMissing) secretsMissing.classList.add('hidden');
+            }
             else { modal.classList.add('hidden'); }
         };
-        window.handleAuthClick = function() { if(isLoggedIn) { if(confirm("Logout? Akses unduh akan ditutup.")) { isLoggedIn=false; localStorage.removeItem('isAuth'); updateAuthUI(); } } else { toggleLoginModal(true); } };
-        
-        window.processLogin = function() {
-            if(document.getElementById('login-username').value === 'guru' && document.getElementById('login-password').value === 'merdeka2026') {
-                isLoggedIn = true; localStorage.setItem('isAuth','true'); updateAuthUI(); toggleLoginModal(false);
-                showToast("Akses Sistem Berhasil Dibuka!");
-            } else { document.getElementById('login-error').classList.remove('hidden'); }
+        window.handleAuthClick = function() {
+            if(isAdmin) {
+                if(confirm("Logout? Sesi Admin akan ditutup dan akses unduh generator akan mati.")) {
+                    adminLogout().then(() => { showToast("Logout berhasil."); });
+                }
+            } else {
+                toggleLoginModal(true);
+                refreshAdminSession();
+            }
+        };
+
+        window.processLogin = async function() {
+            const u = (document.getElementById('login-username').value || '').trim();
+            const p = (document.getElementById('login-password').value || '').trim();
+            const errEl = document.getElementById('login-error');
+            const secretsEl = document.getElementById('login-secrets-missing');
+            if (errEl) errEl.classList.add('hidden');
+            if (secretsEl) secretsEl.classList.add('hidden');
+            try {
+                const res = await fetch('/api/admin/login', {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: u, password: p })
+                });
+                const data = await res.json().catch(() => ({}));
+                if (res.ok && data.ok) {
+                    isAdmin = true; isLoggedIn = true; updateAuthUI();
+                    document.getElementById('login-username').value = '';
+                    document.getElementById('login-password').value = '';
+                    toggleLoginModal(false);
+                    showToast("Login Admin berhasil.");
+                    await adminRefreshStorage();
+                } else if (res.status === 503) {
+                    if (secretsEl) secretsEl.classList.remove('hidden');
+                } else {
+                    if (errEl) errEl.classList.remove('hidden');
+                }
+            } catch (err) {
+                if (errEl) errEl.classList.remove('hidden');
+            }
+        };
+
+        async function adminLogout() {
+            try {
+                await fetch('/api/admin/logout', { method: 'POST', credentials: 'include' });
+            } catch (err) { /* ignore */ }
+            isAdmin = false; isLoggedIn = false;
+            window.cpAdmin = {};
+            updateAuthUI();
+        }
+
+        async function refreshAdminSession() {
+            try {
+                const res = await fetch('/api/admin/status', { credentials: 'include' });
+                const data = await res.json();
+                isAdmin = !!data.admin;
+                isLoggedIn = isAdmin;
+                updateAuthUI();
+                if (isAdmin) await adminRefreshStorage();
+            } catch (err) {
+                isAdmin = false; isLoggedIn = false; updateAuthUI();
+            }
+        }
+
+        // --- STREAMING_CHUNK:Logika Kelola CP Admin ---
+        const ADMIN_AGAMA = new Set(['PAI', 'PAK', 'Katolik', 'Hindu', 'Buddha']);
+        const ADMIN_REGULASI = {
+            agama: { institution: 'Kemendikdasmen', regulation: 'Keputusan Kepala BKPDM', number: '020', year: '2026' },
+            non_agama: { institution: 'Kemendikdasmen', regulation: 'Keputusan Kepala BSKAP', number: '046/H/KR/2025', year: '2025' }
+        };
+        function adminKategori(mapel) { return ADMIN_AGAMA.has(mapel) ? 'agama' : 'non_agama'; }
+        function adminRegulasiLabel(mapel, tipe) {
+            const r = ADMIN_REGULASI[tipe];
+            return `${r.regulation} No. ${r.number} Tahun ${r.year}`;
+        }
+
+        window.adminTambahElemen = function() {
+            const wrap = document.getElementById('admin-cp-elements');
+            const idx = wrap.children.length;
+            const div = document.createElement('div');
+            div.className = 'bg-slate-50 p-3 rounded-lg border border-slate-200 space-y-1';
+            div.innerHTML = `<div class="flex items-center justify-between"><p class="text-xs font-bold text-slate-600">Elemen #${idx + 1}</p><button type="button" onclick="this.closest('.bg-slate-50').remove()" class="text-xs text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></button></div><input class="adm-elm-name w-full px-2 py-1 text-xs rounded border border-slate-200 outline-none" placeholder="Nama Elemen"><textarea class="adm-elm-cp w-full px-2 py-1 text-xs rounded border border-slate-200 outline-none" rows="2" placeholder="Isi CP Elemen"></textarea>`;
+            wrap.appendChild(div);
+        };
+        window.adminResetForm = function() {
+            document.getElementById('admin-form-title').innerText = 'Tambah CP';
+            document.getElementById('admin-save').innerHTML = '<i class="fas fa-save"></i> Simpan CP';
+            document.getElementById('admin-cancel').classList.add('hidden');
+            document.getElementById('admin-cp-mapel').value = '';
+            document.getElementById('admin-cp-fase').value = 'E';
+            document.getElementById('admin-cp-text').value = '';
+            document.getElementById('admin-cp-json').value = '';
+            document.getElementById('admin-cp-elements').innerHTML = '';
+            document.getElementById('admin-cp-year').value = '';
+            document.getElementById('admin-cp-reg').value = '';
+            const msg = document.getElementById('admin-form-msg');
+            msg.classList.add('hidden'); msg.innerText = '';
+            window._adminEditing = null;
+        };
+        window.adminFormAutoFill = function() {
+            const mapel = document.getElementById('admin-cp-mapel').value;
+            if (!mapel) return;
+            const k = adminKategori(mapel);
+            const r = ADMIN_REGULASI[k];
+            document.getElementById('admin-cp-year').value = r.year;
+            document.getElementById('admin-cp-reg').value = adminRegulasiLabel(mapel, k);
+        };
+        window.adminImportJson = function() {
+            const raw = (document.getElementById('admin-cp-json').value || '').trim();
+            if (!raw) { return showToast('Tempel JSON terlebih dahulu.'); }
+            try {
+                const obj = JSON.parse(raw);
+                if (obj.mapel) document.getElementById('admin-cp-mapel').value = obj.mapel;
+                if (obj.fase) document.getElementById('admin-cp-fase').value = obj.fase;
+                if (obj.cp) document.getElementById('admin-cp-text').value = obj.cp;
+                document.getElementById('admin-cp-elements').innerHTML = '';
+                (obj.elements || []).forEach(el => {
+                    adminTambahElemen();
+                    const nodes = document.getElementById('admin-cp-elements').lastChild.querySelectorAll('input,textarea');
+                    nodes[0].value = el.name || '';
+                    nodes[1].value = el.cp || '';
+                });
+                adminFormAutoFill();
+                showToast('JSON diisi ke form.');
+            } catch (err) {
+                showToast('JSON tidak valid.');
+            }
+        };
+        window.adminLoadFile = function() { document.getElementById('admin-cp-file').click(); };
+        document.getElementById('admin-cp-file').addEventListener('change', async function(e) {
+            const file = e.target.files[0]; if (!file) return;
+            const lower = file.name.toLowerCase();
+            if (!lower.endsWith('.txt') && !lower.endsWith('.json')) {
+                showToast('Upload PDF/DOCX belum didukung pada tahap ini. Gunakan TXT atau paste manual.');
+            }
+            if (lower.endsWith('.json')) {
+                const text = await file.text();
+                document.getElementById('admin-cp-json').value = text;
+                adminImportJson();
+            } else {
+                const text = await file.text();
+                document.getElementById('admin-cp-text').value = text;
+                showToast('Isi file .txt dimuat ke form.');
+            }
+            this.value = '';
+        });
+
+        async function adminSaveCp() {
+            const msg = document.getElementById('admin-form-msg');
+            msg.classList.add('hidden'); msg.innerText = '';
+            const mapel = document.getElementById('admin-cp-mapel').value;
+            const fase = document.getElementById('admin-cp-fase').value;
+            const cp = (document.getElementById('admin-cp-text').value || '').trim();
+            if (!mapel || !cp) {
+                msg.classList.remove('hidden'); msg.className = 'text-red-600 text-sm font-medium text-center bg-red-50 py-2 rounded-lg';
+                msg.innerText = 'Pilih mapel dan isi CP.'; return;
+            }
+            const elementsRaw = [];
+            document.querySelectorAll('#admin-cp-elements > .bg-slate-50').forEach(box => {
+                const name = box.querySelector('.adm-elm-name').value.trim();
+                const cpTxt = box.querySelector('.adm-elm-cp').value.trim();
+                if (name && cpTxt) elementsRaw.push({ name, cp: cpTxt });
+            });
+            const expectedYear = ADMIN_REGULASI[adminKategori(mapel)].year;
+            try {
+                const res = await fetch('/api/admin/cp', {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ mapel, fase, cp, elements: elementsRaw, year: expectedYear })
+                });
+                const data = await res.json().catch(() => ({}));
+                if (res.ok && data.ok) {
+                    msg.classList.remove('hidden'); msg.className = 'text-green-700 text-sm font-medium text-center bg-green-50 py-2 rounded-lg';
+                    msg.innerText = 'CP tersimpan.';
+                    adminResetForm();
+                    await adminRefreshStorage();
+                } else {
+                    msg.classList.remove('hidden'); msg.className = 'text-red-600 text-sm font-medium text-center bg-red-50 py-2 rounded-lg';
+                    msg.innerText = data.error || 'Gagal menyimpan.';
+                }
+            } catch (err) {
+                msg.classList.remove('hidden'); msg.className = 'text-red-600 text-sm font-medium text-center bg-red-50 py-2 rounded-lg';
+                msg.innerText = 'Tidak dapat menghubungi server.';
+            }
+        }
+        window.adminSaveCp = adminSaveCp;
+
+        async function adminRefreshStorage() {
+            try {
+                const res = await fetch('/api/admin/cp', { credentials: 'include' });
+                if (!res.ok) return;
+                const data = await res.json();
+                window.cpAdmin = data || {};
+                adminRenderList();
+                renderPemetaanDetail();
+                updateTopikDropdown();
+            } catch (err) { /* ignore */ }
+        }
+
+        function adminRenderList() {
+            const list = document.getElementById('admin-cp-list');
+            const rows = [];
+            const map = window.cpAdmin || {};
+            const mapelList = Object.keys(map).sort();
+            if (mapelList.length === 0) {
+                list.innerHTML = '<p class="text-sm text-slate-500">Belum ada CP yang dikelola. Tambahkan CP melalui formulir di samping.</p>';
+            } else {
+                for (const m of mapelList) {
+                    for (const f of ['E', 'F']) {
+                        const ent = map[m] && map[m][f];
+                        if (!ent) continue;
+                        const src = ent.source || {};
+                        const label = `${src.institution || '-'} | ${src.regulation || '-'} No. ${src.number || '-'} Tahun ${src.year || '-'}`;
+                        rows.push(`<tr class="border-t border-slate-100"><td class="py-2 pr-3 font-semibold text-slate-700">${m}</td><td class="py-2 pr-3">${f}</td><td class="py-2 pr-3">${src.year || '-'}</td><td class="py-2 pr-3 text-xs">${label}</td><td class="py-2 pr-3"><span class="text-green-700 font-bold"><i class="fas fa-check-circle"></i> Tersedia</span></td><td class="py-2 pr-3"><button onclick="adminEdit('${m}','${f}')" class="text-indigo-700 hover:text-indigo-900 mr-3"><i class="fas fa-edit"></i> Edit</button><button onclick="adminDelete('${m}','${f}')" class="text-red-600 hover:text-red-800"><i class="fas fa-trash"></i> Hapus</button></td></tr>`);
+                    }
+                }
+                if (rows.length === 0) {
+                    list.innerHTML = '<p class="text-sm text-slate-500">Belum ada CP yang dikelola.</p>';
+                } else {
+                    list.innerHTML = '<table class="w-full text-sm"><thead><tr class="text-xs uppercase text-slate-500"><th class="py-2 pr-3 text-left">Mapel</th><th class="py-2 pr-3 text-left">Fase</th><th class="py-2 pr-3 text-left">Tahun</th><th class="py-2 pr-3 text-left">Regulasi</th><th class="py-2 pr-3 text-left">Status</th><th class="py-2 pr-3 text-left">Aksi</th></tr></thead><tbody>' + rows.join('') + '</tbody></table>';
+                }
+            }
+            // Stats: hitung dari window.cpData + admin
+            const defaultMap = window.cpData || {};
+            const allMapels = new Set([...Object.keys(defaultMap), ...Object.keys(map)]);
+            let ada = 0, eFase = 0, fFase = 0;
+            let potensialE = 0, potensialF = 0;
+            for (const m of allMapels) {
+                for (const f of ['E', 'F']) {
+                    if (defaultMap[m] && defaultMap[m][f]) {
+                        if (f === 'E') potensialE++; else potensialF++;
+                        if ((map[m] && map[m][f] && (map[m][f].cp || '').trim())) { ada++; if (f === 'E') eFase++; else fFase++; }
+                    } else if (map[m] && map[m][f]) {
+                        if (f === 'E') potensialE++; else potensialF++;
+                        if ((map[m][f].cp || '').trim()) { ada++; if (f === 'E') eFase++; else fFase++; }
+                    }
+                }
+            }
+            const potensial = potensialE + potensialF;
+            document.getElementById('admin-stat-ada').innerText = ada;
+            document.getElementById('admin-stat-kurang').innerText = Math.max(0, potensial - ada);
+            document.getElementById('admin-stat-e').innerText = eFase;
+            document.getElementById('admin-stat-f').innerText = fFase;
+        }
+        window.adminEdit = function(mapel, fase) {
+            const ent = (window.cpAdmin && window.cpAdmin[mapel] && window.cpAdmin[mapel][fase]) || null;
+            if (!ent) return;
+            document.getElementById('admin-form-title').innerText = `Edit CP: ${mapel} (Fase ${fase})`;
+            document.getElementById('admin-save').innerHTML = '<i class="fas fa-save"></i> Perbarui CP';
+            document.getElementById('admin-cancel').classList.remove('hidden');
+            document.getElementById('admin-cp-mapel').value = mapel;
+            document.getElementById('admin-cp-fase').value = fase;
+            document.getElementById('admin-cp-text').value = ent.cp || '';
+            document.getElementById('admin-cp-elements').innerHTML = '';
+            (ent.elements || []).forEach(el => {
+                adminTambahElemen();
+                const box = document.getElementById('admin-cp-elements').lastChild;
+                box.querySelector('.adm-elm-name').value = el.name || '';
+                box.querySelector('.adm-elm-cp').value = el.cp || '';
+            });
+            adminFormAutoFill();
+        };
+        window.adminDelete = async function(mapel, fase) {
+            if (!confirm(`Hapus CP ${mapel} (Fase ${fase})? Generator akan kembali menampilkan "CP resmi belum tersedia."`)) return;
+            try {
+                const res = await fetch(`/api/admin/cp?mapel=${encodeURIComponent(mapel)}&fase=${encodeURIComponent(fase)}`, { method: 'DELETE', credentials: 'include' });
+                const data = await res.json().catch(() => ({}));
+                if (res.ok && data.ok) {
+                    showToast('CP dihapus.');
+                    await adminRefreshStorage();
+                } else {
+                    showToast(data.error || 'Gagal menghapus.');
+                }
+            } catch (err) {
+                showToast('Tidak dapat menghubungi server.');
+            }
         };
 
         window.copyOutput = function() { if(!isLoggedIn) return toggleLoginModal(true); navigator.clipboard.writeText(document.getElementById('output-modul').innerText); showToast("Dokumen disalin!"); };
