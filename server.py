@@ -5,18 +5,44 @@ Serves static files and provides a single POST /api/generate endpoint
 that forwards structured requests to an AI provider (OpenAI by default).
 """
 
+import base64
+import hashlib
+import hmac
 import json
 import os
 import re
 import ssl
+import time
 import urllib.request
 from http.server import HTTPServer, SimpleHTTPRequestHandler
-from urllib.parse import urlparse
+from urllib.parse import urlparse, parse_qs
 
 PORT = int(os.environ.get("PORT", 5000))
 AI_API_KEY = os.environ.get("AI_API_KEY", "").strip()
 AI_BASE_URL = os.environ.get("AI_BASE_URL", "https://api.openai.com/v1").rstrip("/")
 AI_MODEL = os.environ.get("AI_MODEL", "gpt-4o-mini")
+
+# Admin & storage configuration ---------------------------------------------
+ADMIN_USERNAME = os.environ.get("ADMIN_USERNAME", "").strip()
+ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "").strip()
+SESSION_SECRET = os.environ.get("SESSION_SECRET", "replit-default-session-secret")
+DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
+CP_STORAGE_PATH = os.path.join(DATA_DIR, "cp-storage.json")
+
+AGAMA_MAPEL = {"PAI", "PAK", "Katolik", "Hindu", "Buddha"}
+AGAMA_REGULASI = {
+    "institution": "Kemendikdasmen",
+    "regulation": "Keputusan Kepala BKPDM",
+    "number": "020",
+    "year": "2026",
+}
+NON_AGAMA_REGULASI = {
+    "institution": "Kemendikdasmen",
+    "regulation": "Keputusan Kepala BSKAP",
+    "number": "046/H/KR/2025",
+    "year": "2025",
+}
+SESSION_TTL_SECONDS = 24 * 60 * 60
 
 ALLOWED_TAGS = {
     "h1", "h2", "h3", "h4", "h5", "h6", "p", "br", "ul", "ol", "li", "table",
@@ -201,46 +227,243 @@ class RequestHandler(SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=os.path.dirname(os.path.abspath(__file__)), **kwargs)
 
-    def do_OPTIONS(self):
-        self.send_response(204)
-        self.send_header("Access-Control-Allow-Origin", "*")
-        self.send_header("Access-Control-Allow-Methods", "POST, OPTIONS")
-        self.send_header("Access-Control-Allow-Headers", "Content-Type")
-        self.end_headers()
-
-    def do_POST(self):
-        parsed = urlparse(self.path)
-        if parsed.path != "/api/generate":
-            self.send_response(404)
-            self.end_headers()
-            self.wfile.write(b"Not found")
-            return
-
-        content_length = int(self.headers.get("Content-Length", 0))
-        if content_length <= 0:
-            self.send_response(400)
-            self.send_header("Content-Type", "application/json")
-            self.end_headers()
-            self.wfile.write(json.dumps({"error": "Body kosong."}).encode("utf-8"))
-            return
-
+    # ------------------------------------------------------------------
+    def log_message(self, format, *args):
+        # Quieter access log; keep errors visible.
         try:
-            body = self.rfile.read(content_length).decode("utf-8")
-            payload = json.loads(body)
-        except Exception as e:
-            self.send_response(400)
-            self.send_header("Content-Type", "application/json")
-            self.end_headers()
-            self.wfile.write(json.dumps({"error": f"JSON tidak valid: {str(e)}"}).encode("utf-8"))
-            return
+            msg = format % args
+            if " 5" in msg.split('"')[1] or " 4" in msg.split('"')[1]:
+                super().log_message(format, *args)
+        except Exception:
+            pass
 
-        result = call_ai(payload)
-        status = 200 if "html" in result else 500
+    def send_json(self, obj, status=200, extra_headers=None):
+        body = json.dumps(obj).encode("utf-8")
         self.send_response(status)
         self.send_header("Content-Type", "application/json")
         self.send_header("Access-Control-Allow-Origin", "*")
+        self.send_header("Access-Control-Allow-Credentials", "true")
+        self.send_header("Content-Length", str(len(body)))
+        if extra_headers:
+            for k, v in extra_headers.items():
+                self.send_header(k, v)
         self.end_headers()
-        self.wfile.write(json.dumps(result).encode("utf-8"))
+        self.wfile.write(body)
+
+    def read_json_body(self):
+        length = int(self.headers.get("Content-Length", 0))
+        if length <= 0:
+            return None
+        try:
+            raw = self.rfile.read(length).decode("utf-8")
+            return json.loads(raw)
+        except Exception:
+            return None
+
+    # ------------------------------------------------------------------
+    def do_OPTIONS(self):
+        self.send_response(204)
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.send_header("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS")
+        self.send_header("Access-Control-Allow-Headers", "Content-Type")
+        self.send_header("Access-Control-Allow-Credentials", "true")
+        self.end_headers()
+
+    def do_GET(self):
+        parsed = urlparse(self.path)
+        if parsed.path == "/api/admin/status":
+            self.send_json({"admin": is_admin(self), "configured": bool(ADMIN_USERNAME and ADMIN_PASSWORD)})
+            return
+        if parsed.path == "/api/admin/cp":
+            if not is_admin(self):
+                self.send_json({"error": "Unauthorized"}, status=401)
+                return
+            self.send_json(load_storage())
+            return
+        return super().do_GET()
+
+    def do_POST(self):
+        parsed = urlparse(self.path)
+
+        if parsed.path == "/api/admin/login":
+            data = self.read_json_body()
+            if not isinstance(data, dict):
+                self.send_json({"error": "Body tidak valid."}, status=400)
+                return
+            if not ADMIN_USERNAME or not ADMIN_PASSWORD:
+                self.send_json({"error": "Admin Secrets belum dikonfigurasi."}, status=503)
+                return
+            u = (data.get("username") or "").strip()
+            p = (data.get("password") or "").strip()
+            if hmac.compare_digest(u, ADMIN_USERNAME) and hmac.compare_digest(p, ADMIN_PASSWORD):
+                token = make_session_token()
+                cookie = (
+                    f"admin_session={token}; Path=/; HttpOnly; SameSite=Strict; "
+                    f"Max-Age={SESSION_TTL_SECONDS}"
+                )
+                self.send_json({"ok": True}, extra_headers={"Set-Cookie": cookie})
+            else:
+                self.send_json({"error": "Username atau password salah."}, status=401)
+            return
+
+        if parsed.path == "/api/admin/logout":
+            cookie = "admin_session=; Path=/; HttpOnly; SameSite=Strict; Max-Age=0"
+            self.send_json({"ok": True}, extra_headers={"Set-Cookie": cookie})
+            return
+
+        if parsed.path == "/api/admin/cp":
+            if not is_admin(self):
+                self.send_json({"error": "Unauthorized"}, status=401)
+                return
+            data = self.read_json_body()
+            err = validate_cp_payload(data)
+            if err:
+                self.send_json({"error": err}, status=400)
+                return
+            mapel = data["mapel"]
+            fase = data["fase"]
+            source = regulasi_untuk(mapel).copy()
+            source["status"] = "active"
+            entry = {
+                "mapel": mapel,
+                "fase": fase,
+                "cp": data["cp"].strip(),
+                "elements": data.get("elements") or [],
+                "source": source,
+            }
+            storage = load_storage()
+            storage.setdefault(mapel, {})[fase] = entry
+            save_storage(storage)
+            self.send_json({"ok": True, "entry": entry})
+            return
+
+        if parsed.path == "/api/generate":
+            data = self.read_json_body()
+            if data is None:
+                self.send_json({"error": "Body kosong atau JSON tidak valid."}, status=400)
+                return
+            result = call_ai(data)
+            status = 200 if "html" in result else 500
+            self.send_json(result, status=status)
+            return
+
+        self.send_response(404)
+        self.end_headers()
+        self.wfile.write(b"Not found")
+
+    def do_DELETE(self):
+        parsed = urlparse(self.path)
+        if parsed.path != "/api/admin/cp":
+            self.send_response(404)
+            self.end_headers()
+            return
+        if not is_admin(self):
+            self.send_json({"error": "Unauthorized"}, status=401)
+            return
+        qs = parse_qs(parsed.query)
+        mapel = (qs.get("mapel") or [""])[0]
+        fase = (qs.get("fase") or [""])[0]
+        if not mapel or fase not in ("E", "F"):
+            self.send_json({"error": "mapel & fase wajib."}, status=400)
+            return
+        storage = load_storage()
+        if mapel in storage and fase in storage[mapel]:
+            del storage[mapel][fase]
+            if not storage[mapel]:
+                del storage[mapel]
+            save_storage(storage)
+            self.send_json({"ok": True})
+        else:
+            self.send_json({"error": "Entry tidak ditemukan."}, status=404)
+
+
+# ---------------------------------------------------------------------------
+# Admin helpers
+# ---------------------------------------------------------------------------
+def kategori_mapel(mapel):
+    return "agama" if mapel in AGAMA_MAPEL else "non_agama"
+
+
+def regulasi_untuk(mapel):
+    return dict(AGAMA_REGULASI if mapel in AGAMA_MAPEL else NON_AGAMA_REGULASI)
+
+
+def make_session_token():
+    ts = str(int(time.time()))
+    sig = hmac.new(SESSION_SECRET.encode("utf-8"), ts.encode("utf-8"), hashlib.sha256).hexdigest()
+    return f"{ts}.{sig}"
+
+
+def verify_session(cookie_header):
+    if not cookie_header:
+        return False
+    token = None
+    for part in cookie_header.split(";"):
+        part = part.strip()
+        if part.startswith("admin_session="):
+            token = part[len("admin_session="):]
+            break
+    if not token or "." not in token:
+        return False
+    try:
+        ts, sig = token.split(".", 1)
+        expected = hmac.new(SESSION_SECRET.encode("utf-8"), ts.encode("utf-8"), hashlib.sha256).hexdigest()
+        if not hmac.compare_digest(sig, expected):
+            return False
+        return (time.time() - int(ts)) < SESSION_TTL_SECONDS
+    except Exception:
+        return False
+
+
+def is_admin(handler):
+    return verify_session(handler.headers.get("Cookie", ""))
+
+
+def load_storage():
+    if not os.path.exists(CP_STORAGE_PATH):
+        return {}
+    try:
+        with open(CP_STORAGE_PATH, "r", encoding="utf-8") as f:
+            return json.loads(f.read() or "{}")
+    except Exception:
+        return {}
+
+
+def save_storage(data):
+    os.makedirs(DATA_DIR, exist_ok=True)
+    tmp = CP_STORAGE_PATH + ".tmp"
+    with open(tmp, "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+    os.replace(tmp, CP_STORAGE_PATH)
+
+
+def validate_cp_payload(data):
+    if not isinstance(data, dict):
+        return "Body tidak valid."
+    mapel = (data.get("mapel") or "").strip()
+    fase = (data.get("fase") or "").strip()
+    cp_text = (data.get("cp") or "").strip()
+    if not mapel:
+        return "Mata pelajaran wajib diisi."
+    if fase not in ("E", "F"):
+        return "Fase harus E atau F."
+    if not cp_text:
+        return "Capaian Pembelajaran tidak boleh kosong."
+    expected_year = regulasi_untuk(mapel)["year"]
+    provided_year = str(data.get("year") or "").strip() or expected_year
+    if provided_year != expected_year:
+        kategori = kategori_mapel(mapel)
+        return f"Tahun regulasi tidak sesuai. Mapel {kategori} harus {expected_year}."
+    elements = data.get("elements")
+    if elements is not None and not isinstance(elements, list):
+        return "Elemen CP harus berupa daftar."
+    if isinstance(elements, list):
+        for idx, item in enumerate(elements):
+            if not isinstance(item, dict):
+                return f"Elemen #{idx + 1} tidak valid."
+            if "name" not in item or "cp" not in item:
+                return f"Elemen #{idx + 1} harus memiliki name dan cp."
+    return None
 
 
 if __name__ == "__main__":

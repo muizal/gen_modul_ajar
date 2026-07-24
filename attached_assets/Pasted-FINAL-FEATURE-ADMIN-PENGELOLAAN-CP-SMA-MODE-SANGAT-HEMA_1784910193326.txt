@@ -1,0 +1,714 @@
+FINAL FEATURE: ADMIN PENGELOLAAN CP SMA
+MODE SANGAT HEMAT KREDIT
+
+LANJUTKAN PROJECT EXISTING.
+
+Kredit Replit sangat terbatas.
+
+JANGAN:
+- rebuild aplikasi
+- redesign UI
+- mengganti framework
+- refactor besar
+- menghapus generator existing
+- mengubah endpoint AI yang sudah bekerja
+- membuat fitur pembayaran
+- membuat akun guru
+- membuat dashboard kompleks
+- install package baru kecuali benar-benar wajib
+
+KERJAKAN HANYA:
+LOGIN ADMIN + UPLOAD/KELOLA CP.
+
+==================================================
+TUJUAN
+==================================================
+
+Saya ingin administrator dapat memasukkan dan mengelola
+Capaian Pembelajaran (CP) resmi SMA.
+
+CP menjadi SOURCE OF TRUTH aplikasi.
+
+Alur:
+
+ADMIN LOGIN
+↓
+KELOLA CP
+↓
+UPLOAD / INPUT CP
+↓
+VALIDASI
+↓
+SIMPAN
+↓
+Generator membaca CP
+↓
+AI menggunakan CP tersebut
+↓
+Dokumen dihasilkan
+
+AI DILARANG membuat CP sendiri.
+
+==================================================
+1. LOGIN ADMIN
+==================================================
+
+Buat/aktifkan halaman atau modal login Admin menggunakan
+desain existing.
+
+Kredensial yang saya inginkan:
+
+Username:
+sayangku
+
+Password:
+sayangku
+
+TETAPI:
+
+JANGAN hardcode password pada index.html atau JavaScript frontend
+jika backend existing dapat digunakan.
+
+Gunakan environment variables:
+
+ADMIN_USERNAME
+ADMIN_PASSWORD
+
+Saya akan mengisi Replit Secrets:
+
+ADMIN_USERNAME=sayangku
+ADMIN_PASSWORD=sayangku
+
+Login harus diverifikasi server-side jika backend existing tersedia.
+
+Jangan membuat sistem autentikasi kompleks.
+
+Tidak perlu:
+- register
+- forgot password
+- email verification
+- Google Login
+- multi-role
+
+Hanya satu Admin.
+
+==================================================
+2. HALAMAN ADMIN
+==================================================
+
+Setelah login berhasil, tampilkan:
+
+"Kelola Capaian Pembelajaran"
+
+Gunakan UI existing.
+
+Jangan membuat dashboard besar.
+
+Menu minimum:
+
+1. Daftar CP
+2. Tambah / Upload CP
+3. Edit CP
+4. Hapus CP
+5. Logout
+
+==================================================
+3. KHUSUS JENJANG SMA
+==================================================
+
+Aplikasi hanya untuk:
+
+SMA
+
+Fase:
+
+Kelas X = Fase E
+Kelas XI = Fase F
+Kelas XII = Fase F
+
+Jangan tambahkan:
+
+SD
+SMP
+SMK
+
+==================================================
+4. KATEGORI CP
+==================================================
+
+CP dibagi menjadi dua kelompok.
+
+--------------------------------
+A. MAPEL AGAMA DAN BUDI PEKERTI
+--------------------------------
+
+Gunakan CP tahun:
+
+2026
+
+Sumber regulasi harus disiapkan untuk:
+
+Keputusan Kepala BKPDM
+Nomor 020 Tahun 2026
+
+sebagai perubahan CP Pendidikan Agama dan Budi Pekerti.
+
+Kelompok ini meliputi mapel agama yang tersedia pada aplikasi,
+misalnya:
+
+- Pendidikan Agama Islam dan Budi Pekerti
+- Pendidikan Agama Kristen dan Budi Pekerti
+- Pendidikan Agama Katolik dan Budi Pekerti
+- Pendidikan Agama Hindu dan Budi Pekerti
+- Pendidikan Agama Buddha dan Budi Pekerti
+
+Gunakan daftar mapel agama EXISTING pada aplikasi.
+
+Jangan mengarang CP.
+
+--------------------------------
+B. MAPEL UMUM / NON-AGAMA
+--------------------------------
+
+Gunakan CP tahun:
+
+2025
+
+Sumber:
+
+Keputusan Kepala BSKAP
+Nomor 046/H/KR/2025
+
+Gunakan untuk mapel non-agama yang tersedia pada aplikasi.
+
+Contoh:
+
+Pendidikan Pancasila
+Bahasa Indonesia
+Matematika
+Bahasa Inggris
+Sejarah
+PJOK
+Fisika
+Kimia
+Biologi
+Geografi
+Ekonomi
+Sosiologi
+dan mata pelajaran tingkat lanjut yang memang tersedia.
+
+==================================================
+5. VALIDASI TAHUN OTOMATIS
+==================================================
+
+Admin TIDAK BOLEH salah memilih regulasi.
+
+Jika memilih mapel kategori AGAMA:
+
+otomatis:
+
+Tahun CP = 2026
+
+Regulasi =
+Keputusan Kepala BKPDM Nomor 020 Tahun 2026
+
+Jika memilih mapel NON-AGAMA:
+
+otomatis:
+
+Tahun CP = 2025
+
+Regulasi =
+Keputusan Kepala BSKAP Nomor 046/H/KR/2025
+
+Field regulasi dan tahun boleh dibuat readonly.
+
+Jangan meminta Admin mengetiknya setiap kali.
+
+==================================================
+6. FORM TAMBAH CP
+==================================================
+
+Sediakan form:
+
+Mata Pelajaran
+Fase
+Tahun CP
+Sumber/Regulasi
+Capaian Pembelajaran
+Elemen CP
+
+Mata Pelajaran menggunakan dropdown existing.
+
+Fase:
+
+E
+F
+
+Tahun dan regulasi otomatis berdasarkan kategori mapel.
+
+==================================================
+7. ELEMEN CP
+==================================================
+
+Admin dapat menambahkan beberapa elemen.
+
+Format:
+
+Nama Elemen:
+[ input ]
+
+Isi CP Elemen:
+[ textarea ]
+
+Tombol:
+
++ Tambah Elemen
+
+Admin dapat:
+- tambah
+- edit
+- hapus elemen
+
+Jangan membatasi jumlah elemen secara hardcoded.
+
+==================================================
+8. METODE INPUT CP
+==================================================
+
+Sediakan DUA cara sederhana:
+
+A. INPUT MANUAL
+
+Admin paste teks CP ke textarea.
+
+B. UPLOAD FILE
+
+Admin dapat upload:
+
+PDF
+DOCX
+TXT
+
+PENTING:
+
+Upload file TIDAK BOLEH langsung dianggap CP valid.
+
+Jika ekstraksi file sudah dapat dilakukan menggunakan kemampuan
+project existing, tampilkan hasil ekstraksi untuk diperiksa Admin.
+
+Jika project belum mempunyai parser PDF/DOCX:
+
+JANGAN install library besar hanya untuk fitur ini.
+
+Dalam kondisi tersebut, prioritaskan:
+- TXT
+- input/paste manual
+
+dan tampilkan informasi bahwa PDF/DOCX memerlukan ekstraksi
+yang belum tersedia.
+
+JANGAN meminta AI menebak isi file.
+
+==================================================
+9. UPLOAD JSON
+==================================================
+
+Tambahkan opsi ringan:
+
+Import JSON CP
+
+Format:
+
+{
+  "mapel": "B.Inggris",
+  "fase": "E",
+  "cp": "...",
+  "elements": [
+    {
+      "name": "...",
+      "cp": "..."
+    }
+  ]
+}
+
+Regulasi dan tahun TIDAK perlu dipercaya dari JSON.
+
+Sistem menentukan sendiri berdasarkan kategori mapel:
+
+Agama → 2026
+Non-agama → 2025
+
+==================================================
+10. VALIDASI SEBELUM SIMPAN
+==================================================
+
+CP hanya boleh disimpan jika:
+
+- mapel valid
+- fase E/F
+- CP tidak kosong
+- regulasi tersedia
+- tahun benar
+
+Jika mapel agama tetapi tahun bukan 2026:
+
+TOLAK.
+
+Jika mapel non-agama tetapi tahun bukan 2025:
+
+TOLAK.
+
+==================================================
+11. PENYIMPANAN
+==================================================
+
+Gunakan solusi PALING SEDERHANA yang kompatibel dengan project.
+
+Jika backend existing sudah mempunyai penyimpanan persisten,
+gunakan itu.
+
+Jika belum ada database dan membuat database akan membutuhkan
+perubahan besar:
+
+gunakan penyimpanan file JSON server-side sederhana seperti:
+
+/data/cp-storage.json
+
+JANGAN membuat:
+- PostgreSQL
+- Supabase
+- Firebase
+- MongoDB
+
+hanya untuk fitur ini.
+
+PENTING:
+
+Jika filesystem deployment ternyata tidak persisten,
+jelaskan pada laporan akhir.
+
+Jangan menyembunyikan keterbatasan tersebut.
+
+==================================================
+12. DATA CP DEFAULT
+==================================================
+
+Pertahankan:
+
+/data/cp-data.js
+
+sebagai data default jika diperlukan.
+
+Tetapi CP yang dikelola Admin harus dapat dibaca generator.
+
+Buat satu helper/source loader sehingga generator tidak perlu tahu
+CP berasal dari file default atau Admin storage.
+
+==================================================
+13. DAFTAR CP ADMIN
+==================================================
+
+Tampilkan tabel sederhana:
+
+Mapel
+Fase
+Tahun
+Regulasi
+Status
+Aksi
+
+Status:
+
+✓ CP Tersedia
+
+atau:
+
+⚠ Belum Tersedia
+
+Aksi:
+
+Edit
+Hapus
+
+Tidak perlu pagination/search kompleks.
+
+==================================================
+14. INDIKATOR KELENGKAPAN
+==================================================
+
+Tampilkan ringkasan:
+
+CP tersedia: X
+CP belum tersedia: Y
+
+Pisahkan jika mudah:
+
+Fase E
+Fase F
+
+Jangan membuat grafik.
+
+==================================================
+15. HUBUNGKAN KE GENERATOR
+==================================================
+
+Ini bagian PALING PENTING.
+
+Ketika pengguna biasa memilih:
+
+Mapel
++
+Kelas
+
+aplikasi menentukan:
+
+kelas X → E
+kelas XI → F
+kelas XII → F
+
+Kemudian mengambil CP yang dikelola Admin.
+
+Jika CP tersedia:
+
+Generator dapat melanjutkan.
+
+Jika tidak:
+
+tampilkan:
+
+"CP resmi untuk mata pelajaran dan fase ini belum tersedia.
+Silakan hubungi administrator."
+
+==================================================
+16. TOPIK
+==================================================
+
+Topik tetap berasal dari:
+
+curriculum-map.js
+
+JANGAN meminta AI membuat topik ketika dropdown dibuka.
+
+CP dan topik adalah data berbeda:
+
+CP:
+mapel + fase
+
+Topik:
+mapel + kelas
+
+==================================================
+17. AI
+==================================================
+
+Jangan ubah endpoint AI existing kecuali diperlukan untuk membaca
+CP terbaru.
+
+Ketika Modul Ajar/LKPD/Asesmen dibuat:
+
+ambil:
+
+CP Admin
++
+Elemen CP
++
+TP
++
+Topik
++
+JP
++
+Pertemuan
+
+kemudian kirim ke AI.
+
+AI DILARANG:
+
+- mencari CP
+- membuat CP
+- mengganti CP
+- memperbaiki redaksi CP
+- mengarang regulasi
+
+==================================================
+18. UPDATE CP
+==================================================
+
+Jika Admin mengedit CP:
+
+dokumen berikutnya harus menggunakan CP terbaru.
+
+Tidak perlu regenerate dokumen lama.
+
+==================================================
+19. HAPUS CP
+==================================================
+
+Jika Admin menghapus CP:
+
+generator kembali menampilkan:
+
+"CP resmi belum tersedia."
+
+Gunakan konfirmasi sederhana sebelum hapus.
+
+==================================================
+20. KEAMANAN MINIMUM
+==================================================
+
+Route/endpoint untuk:
+
+Tambah CP
+Edit CP
+Hapus CP
+
+harus memeriksa sesi/login Admin.
+
+Jangan hanya menyembunyikan tombol frontend.
+
+Jangan expose:
+
+ADMIN_PASSWORD
+AI_API_KEY
+
+ke browser.
+
+==================================================
+21. LOGOUT
+==================================================
+
+Tambahkan Logout.
+
+Setelah logout:
+
+halaman Kelola CP tidak dapat diakses tanpa login kembali.
+
+==================================================
+22. JANGAN BUAT FITUR LAIN
+==================================================
+
+DILARANG menambahkan:
+
+- akun guru
+- registrasi
+- pembayaran
+- subscription
+- analytics
+- chatbot
+- dashboard statistik
+- Google login
+- history kompleks
+- cloud storage
+- multi-admin
+- role management
+
+==================================================
+23. TEST MINIMUM
+==================================================
+
+Lakukan hanya test berikut.
+
+TEST 1
+
+Login Admin melalui konfigurasi:
+
+ADMIN_USERNAME
+ADMIN_PASSWORD
+
+Pastikan berhasil.
+
+TEST 2
+
+Tambahkan satu CP mapel NON-AGAMA.
+
+Pastikan otomatis:
+
+2025
+Keputusan Kepala BSKAP No. 046/H/KR/2025
+
+TEST 3
+
+Tambahkan satu CP mapel AGAMA.
+
+Pastikan otomatis:
+
+2026
+Keputusan Kepala BKPDM No. 020 Tahun 2026
+
+TEST 4
+
+Pastikan CP tersebut muncul pada daftar Admin.
+
+TEST 5
+
+Buka generator.
+
+Pilih mapel/fase yang baru mempunyai CP.
+
+Pastikan pesan:
+
+"CP belum tersedia"
+
+hilang.
+
+TEST 6
+
+Pastikan CP diteruskan ke generator AI existing.
+
+Jangan melakukan test tambahan.
+
+==================================================
+24. SECRETS
+==================================================
+
+Gunakan:
+
+ADMIN_USERNAME
+ADMIN_PASSWORD
+AI_API_KEY
+
+JANGAN meminta nilai secret melalui source code.
+
+Jika ADMIN_USERNAME / ADMIN_PASSWORD belum tersedia:
+
+laporkan bahwa Admin Secrets perlu dikonfigurasi.
+
+==================================================
+25. STOP
+==================================================
+
+Setelah:
+
+LOGIN ADMIN
++
+TAMBAH CP
++
+EDIT CP
++
+HAPUS CP
++
+VALIDASI 2025/2026
++
+GENERATOR MEMBACA CP
+
+berfungsi:
+
+STOP CODING.
+
+Jangan redesign.
+Jangan refactor.
+Jangan menambahkan fitur.
+
+Laporan maksimal:
+
+ADMIN LOGIN: WORKING / ERROR
+CP STORAGE: ...
+AGAMA 2026 VALIDATION: WORKING / ERROR
+NON-AGAMA 2025 VALIDATION: WORKING / ERROR
+CP → GENERATOR: WORKING / ERROR
+BLOCKING ISSUE: ...
+
+KREDIT REPLIT SANGAT TERBATAS.
+
+KERJAKAN HANYA FITUR YANG DIMINTA.
