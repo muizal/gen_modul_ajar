@@ -1,0 +1,372 @@
+PERBAIKI LOGIN ADMIN SAJA — JANGAN UBAH FITUR LAIN.
+
+Saya sudah memeriksa source code project.
+
+KONDISI SAAT INI:
+
+Login Guru:
+username: guru
+password: merdeka2026
+
+SUDAH BERHASIL.
+
+Login Admin seharusnya menggunakan environment variables:
+
+ADMIN_USERNAME
+ADMIN_PASSWORD
+
+dengan nilai yang saya inginkan:
+
+ADMIN_USERNAME=sayangku
+ADMIN_PASSWORD=sayangku
+
+Tetapi login Admin masih gagal.
+
+Backend server.py sudah membaca:
+
+ADMIN_USERNAME = os.environ.get("ADMIN_USERNAME", "").strip()
+ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "").strip()
+
+dan project juga sudah mempunyai endpoint:
+
+GET /api/login-status
+
+==================================================
+TUGAS
+==================================================
+
+JANGAN membuat sistem login baru.
+
+JANGAN redesign.
+
+JANGAN mengubah generator.
+
+JANGAN mengubah AI.
+
+JANGAN mengubah CP.
+
+JANGAN install package.
+
+HANYA perbaiki agar login Admin benar-benar bekerja.
+
+==================================================
+1. PERIKSA ENVIRONMENT VARIABLES
+==================================================
+
+Periksa pada runtime server apakah:
+
+ADMIN_USERNAME
+
+dan
+
+ADMIN_PASSWORD
+
+benar-benar tersedia.
+
+Gunakan:
+
+os.environ.get("ADMIN_USERNAME")
+os.environ.get("ADMIN_PASSWORD")
+
+JANGAN tampilkan nilai password di console/log.
+
+Endpoint:
+
+GET /api/login-status
+
+harus mengembalikan minimal:
+
+{
+  "admin_username_configured": true,
+  "admin_password_configured": true
+}
+
+jika Secrets tersedia.
+
+==================================================
+2. JIKA SECRETS BELUM TERSEDIA
+==================================================
+
+JANGAN hardcode:
+
+sayangku
+
+ke frontend.
+
+JANGAN memasukkan password ke index.html.
+
+Laporkan bahwa Replit Secrets berikut harus dibuat:
+
+ADMIN_USERNAME
+ADMIN_PASSWORD
+
+Saya sendiri akan mengisi nilainya melalui Replit Secrets.
+
+==================================================
+3. PERIKSA POST /api/login
+==================================================
+
+Pastikan endpoint:
+
+POST /api/login
+
+menerima:
+
+{
+  "username": "...",
+  "password": "..."
+}
+
+Kemudian validasi ADMIN di SERVER:
+
+username == ADMIN_USERNAME
+password == ADMIN_PASSWORD
+
+Jika cocok return:
+
+{
+  "success": true,
+  "role": "admin"
+}
+
+==================================================
+4. PERTAHANKAN LOGIN GURU
+==================================================
+
+Login existing:
+
+guru
+merdeka2026
+
+HARUS tetap bekerja.
+
+Return:
+
+{
+  "success": true,
+  "role": "guru"
+}
+
+Jangan merusaknya.
+
+==================================================
+5. FRONTEND
+==================================================
+
+Pastikan form login yang sedang digunakan browser benar-benar memanggil:
+
+POST /api/login
+
+untuk KEDUA jenis akun.
+
+Jangan melakukan validasi seperti:
+
+username harus "guru"
+
+di frontend sebelum request dikirim.
+
+Backend yang menentukan:
+
+role = guru
+
+atau:
+
+role = admin
+
+==================================================
+6. SETELAH ADMIN LOGIN
+==================================================
+
+Jika backend mengembalikan:
+
+role: "admin"
+
+frontend harus:
+
+- menyimpan status login sesuai mekanisme existing
+- mengenali user sebagai Admin
+- menampilkan menu/tombol "Kelola CP"
+- mengizinkan akses halaman Kelola CP
+
+Admin juga boleh menggunakan generator dokumen.
+
+==================================================
+7. AKSES GURU
+==================================================
+
+Jika:
+
+role: "guru"
+
+pertahankan:
+
+- generator
+- preview
+- download/export
+
+Tetapi jangan tampilkan:
+
+Kelola CP
+
+==================================================
+8. SESSION ADMIN
+==================================================
+
+Pastikan session Admin benar-benar dibuat setelah login berhasil.
+
+Endpoint Admin untuk:
+
+- tambah CP
+- edit CP
+- hapus CP
+- upload/import CP
+
+harus mengenali session tersebut sebagai:
+
+admin
+
+Jangan hanya menyembunyikan tombol frontend.
+
+==================================================
+9. LOGOUT
+==================================================
+
+Logout harus membersihkan session.
+
+Setelah logout:
+
+Kelola CP tidak boleh dapat diakses tanpa login Admin kembali.
+
+==================================================
+10. TEST YANG WAJIB
+==================================================
+
+Jangan hanya membaca source code.
+
+TEST RUNTIME.
+
+TEST 1:
+
+GET /api/login-status
+
+Pastikan:
+
+admin_username_configured = true
+admin_password_configured = true
+
+Jika salah satunya false:
+
+STOP.
+
+Jangan melakukan perubahan lain.
+
+Laporkan bahwa Secrets belum masuk ke runtime.
+
+TEST 2:
+
+Login:
+
+guru / merdeka2026
+
+Expected:
+
+success = true
+role = guru
+
+TEST 3:
+
+Gunakan ADMIN_USERNAME dan ADMIN_PASSWORD dari environment variables.
+
+Expected:
+
+success = true
+role = admin
+
+JANGAN tampilkan password Admin pada laporan.
+
+TEST 4:
+
+Login Admin melalui UI browser.
+
+Expected:
+
+Login berhasil
+dan menu:
+
+Kelola CP
+
+muncul.
+
+==================================================
+11. JIKA ENVIRONMENT VARIABLE TRUE TAPI LOGIN GAGAL
+==================================================
+
+Cari penyebab langsung pada:
+
+POST /api/login
+→ comparison credentials
+→ session
+→ response JSON
+→ frontend response handling
+
+Perbaiki HANYA titik yang gagal.
+
+JANGAN membuat autentikasi baru.
+
+==================================================
+12. JANGAN SENTUH
+==================================================
+
+DILARANG mengubah:
+
+AI_API_KEY
+AI provider
+/api/generate
+cp-data.js
+curriculum-map.js
+Modul Ajar
+LKPD
+Asesmen
+AME
+Prota
+Prosem
+ATP
+KKTP
+Daftar Nilai
+PDF
+Word
+Excel
+UI utama
+
+==================================================
+13. STOP
+==================================================
+
+Begitu:
+
+GURU LOGIN = WORKING
+
+ADMIN LOGIN = WORKING
+
+KELOLA CP = ACCESSIBLE BY ADMIN
+
+STOP.
+
+Jangan melakukan refactor.
+Jangan menambah fitur.
+Jangan melakukan redesign.
+
+Laporan akhir HANYA:
+
+LOGIN STATUS:
+ADMIN_USERNAME CONFIGURED: YES/NO
+ADMIN_PASSWORD CONFIGURED: YES/NO
+GURU LOGIN: WORKING/ERROR
+ADMIN LOGIN: WORKING/ERROR
+ADMIN SESSION: WORKING/ERROR
+KELOLA CP: WORKING/ERROR
+ROOT CAUSE: ...
+
+KREDIT REPLIT SANGAT TERBATAS.
+
+KERJAKAN HANYA BUG LOGIN ADMIN.
