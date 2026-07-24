@@ -304,6 +304,24 @@ class RequestHandler(SimpleHTTPRequestHandler):
                 return
             self.send_json(load_storage())
             return
+        if parsed.path == "/api/cp":
+            # Public read-only endpoint: any role (guru included) can fetch CP.
+            # Admin-published CP are persisted on the server in CP storage;
+            # the loaded storage is the source of truth (overlay default seed
+            # already lives on the frontend, so do not return empty for non-admin).
+            qs = parse_qs(parsed.query)
+            data = load_storage()
+            mapel_q = (qs.get("mapel") or [""])[0]
+            fase_q = (qs.get("fase") or [""])[0]
+            if mapel_q and fase_q in ("E", "F"):
+                entry = (data.get(mapel_q) or {}).get(fase_q)
+                if entry:
+                    self.send_json({"entry": entry, "source": "admin"})
+                else:
+                    self.send_json({"entry": None, "source": "admin"})
+                return
+            self.send_json({"storage": data, "source": "admin"})
+            return
         return super().do_GET()
 
     def do_POST(self):

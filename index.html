@@ -456,8 +456,13 @@
 
         function getCPData(mapel, fase) {
             if (!mapel || !fase) return null;
-            const adminEntry = window.cpAdmin && window.cpAdmin[mapel] && window.cpAdmin[mapel][fase];
-            if (adminEntry && (adminEntry.cp || '').trim() !== '') return adminEntry;
+            // Admin-published CP is loaded by adminRefreshStorage (admin) or
+            // by loadPublicCP() (guru/anon). Prefer persisted admin entry over
+            // default seed across all callers; this guarantees refresh/restart/
+            // redeploy upstream CP survives on the frontend.
+            const persisted = (window.cpAdmin && window.cpAdmin[mapel] && window.cpAdmin[mapel][fase])
+                || (window.cpAdminOverlay && window.cpAdminOverlay[mapel] && window.cpAdminOverlay[mapel][fase]);
+            if (persisted && (persisted.cp || '').trim() !== '') return persisted;
             if (window.cpData && window.cpData[mapel] && window.cpData[mapel][fase]) {
                 return window.cpData[mapel][fase];
             }
@@ -1124,7 +1129,7 @@
         let isGuru = false;
         let isLoggedIn = false;
         let currentRole = null; // 'admin' | 'guru' | null
-        window.addEventListener('DOMContentLoaded', () => { refreshAdminSession(); });
+        window.addEventListener('DOMContentLoaded', () => { refreshAdminSession(); loadPublicCP(); });
 
         function updateAuthUI() {
             const btn = document.getElementById('auth-btn');
@@ -1227,9 +1232,31 @@
                 isLoggedIn = !!role;
                 updateAuthUI();
                 if (isAdmin) await adminRefreshStorage();
+                // Always pull the latest admin-published CP cache so guru/anon
+                // see updates without needing admin privileges; refreshAdminSession
+                // is also called after login so latest CP appears immediately.
+                await loadPublicCP();
             } catch (err) {
                 currentRole = null;
                 isAdmin = false; isLoggedIn = false; isGuru = false; updateAuthUI();
+            }
+        }
+
+        // Read-only fetch — refreshes the persisted CP overlay that the generator
+        // uses. Called on page load and after every refreshAdminSession() call so
+        // the generator always sees the latest admin-published CP.
+        async function loadPublicCP() {
+            try {
+                const res = await fetch('/api/cp', { credentials: 'include', cache: 'no-store' });
+                if (!res.ok) return;
+                const data = await res.json();
+                if (data && data.storage && typeof data.storage === 'object') {
+                    window.cpAdminOverlay = data.storage;
+                } else {
+                    window.cpAdminOverlay = {};
+                }
+            } catch (err) {
+                window.cpAdminOverlay = window.cpAdminOverlay || {};
             }
         }
 

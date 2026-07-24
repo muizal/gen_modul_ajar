@@ -1,0 +1,540 @@
+IMPLEMENTASI PENYIMPANAN CP PERSISTEN — FOKUS HANYA FITUR INI
+
+LANJUTKAN PROJECT EXISTING.
+
+KONDISI:
+- Halaman Admin/Kelola CP sudah ada.
+- Admin dapat memasukkan CP.
+- Generator sudah membaca CP.
+- Jangan mengubah sistem login yang sedang diperbaiki.
+- Jangan redesign aplikasi.
+
+MASALAH:
+CP yang dimasukkan Admin harus TERSIMPAN PERMANEN dan otomatis
+tersedia kembali pada web.
+
+TARGET:
+
+Admin input CP
+→ klik Simpan
+→ backend menyimpan CP secara persisten
+→ refresh halaman
+→ CP tetap ada
+→ logout/login
+→ CP tetap ada
+→ restart server
+→ CP tetap ada
+→ Published App menggunakan CP yang sama
+→ generator otomatis membaca CP terbaru.
+
+==================================================
+1. JANGAN SIMPAN CP DI FRONTEND
+==================================================
+
+DILARANG menggunakan sebagai penyimpanan utama:
+
+localStorage
+sessionStorage
+JavaScript variable
+window.cpData hasil runtime saja
+
+Data CP harus disimpan SERVER-SIDE secara persisten.
+
+==================================================
+2. GUNAKAN PERSISTENT STORAGE
+==================================================
+
+Periksa project/Replit environment existing.
+
+Jika Replit menyediakan persistent database/storage yang sudah
+tersedia untuk project ini, gunakan solusi tersebut.
+
+Prioritas:
+1. storage/database persisten existing
+2. Replit persistent database/storage yang paling sederhana
+3. SQLite hanya jika deployment benar-benar menyediakan persistent disk
+
+JANGAN gunakan file sementara sebagai source of truth jika file
+tersebut akan hilang ketika deployment restart/redeploy.
+
+JANGAN menambahkan Supabase/Firebase/PostgreSQL jika tidak diperlukan.
+
+==================================================
+3. STRUKTUR DATA CP
+==================================================
+
+Setiap record CP minimal mempunyai:
+
+id
+mapel
+fase
+tahun
+regulasi
+cp
+elements
+created_at
+updated_at
+
+Contoh konseptual:
+
+{
+  "id": "...",
+  "mapel": "B.Inggris",
+  "fase": "E",
+  "tahun": 2025,
+  "regulasi": "Keputusan Kepala BSKAP No. 046/H/KR/2025",
+  "cp": "...",
+  "elements": [
+    {
+      "name": "...",
+      "cp": "..."
+    }
+  ],
+  "created_at": "...",
+  "updated_at": "..."
+}
+
+==================================================
+4. UNIQUE CP
+==================================================
+
+Gunakan kombinasi:
+
+mapel + fase
+
+sebagai identitas unik CP aktif.
+
+Contoh:
+
+B.Inggris + E
+
+hanya mempunyai SATU CP aktif.
+
+Jika Admin menyimpan ulang kombinasi yang sama:
+
+UPDATE record existing.
+
+JANGAN membuat duplikat.
+
+==================================================
+5. ATURAN REGULASI
+==================================================
+
+Pertahankan aturan existing.
+
+MAPEL AGAMA DAN BUDI PEKERTI:
+
+CP Tahun 2026
+
+Regulasi:
+Keputusan Kepala BKPDM Nomor 020 Tahun 2026
+
+MAPEL UMUM/NON-AGAMA:
+
+CP Tahun 2025
+
+Regulasi:
+Keputusan Kepala BSKAP Nomor 046/H/KR/2025
+
+Jangan izinkan Admin salah memilih tahun.
+
+==================================================
+6. SIMPAN OTOMATIS SETELAH SUBMIT
+==================================================
+
+Ketika Admin menekan:
+
+Simpan CP
+
+frontend mengirim data ke backend.
+
+Backend:
+
+1. validasi role Admin
+2. validasi mapel
+3. validasi fase
+4. validasi CP tidak kosong
+5. tentukan tahun/regulasi
+6. INSERT atau UPDATE database
+7. return data yang berhasil disimpan
+
+Expected response:
+
+{
+  "success": true,
+  "message": "CP berhasil disimpan",
+  "data": {...}
+}
+
+==================================================
+7. JANGAN HANYA UPDATE window.cpData
+==================================================
+
+Ini sangat penting.
+
+Jangan melakukan:
+
+window.cpData[...] = ...
+
+sebagai satu-satunya penyimpanan.
+
+Boleh update cache frontend SETELAH backend berhasil menyimpan,
+tetapi database/server storage adalah SOURCE OF TRUTH.
+
+==================================================
+8. LOAD CP OTOMATIS
+==================================================
+
+Saat web dibuka:
+
+frontend/generator harus mengambil CP terbaru dari backend.
+
+Gunakan endpoint existing jika sudah ada.
+
+Jika diperlukan gunakan endpoint minimal:
+
+GET /api/cp
+
+Jangan membuat endpoint tambahan yang tidak perlu.
+
+==================================================
+9. GET CP
+==================================================
+
+Generator harus dapat meminta CP berdasarkan:
+
+mapel
+fase
+
+Contoh:
+
+GET /api/cp?mapel=B.Inggris&fase=E
+
+atau gunakan mekanisme existing yang setara.
+
+Backend mengambil dari persistent storage.
+
+Jika tersedia:
+return CP.
+
+Jika tidak:
+return null/not-found yang ditangani dengan baik.
+
+==================================================
+10. PRIORITAS DATA
+==================================================
+
+Jika project masih mempunyai:
+
+/data/cp-data.js
+
+anggap file tersebut sebagai DEFAULT/SEED DATA saja.
+
+Prioritas runtime:
+
+CP yang disimpan Admin
+        ↓
+jika tidak ada
+        ↓
+cp-data.js default
+        ↓
+jika tidak ada
+        ↓
+CP belum tersedia
+
+Jangan menimpa CP Admin dengan cp-data.js.
+
+==================================================
+11. GENERATOR
+==================================================
+
+Ketika pengguna memilih:
+
+Mapel
++
+Kelas
+
+tentukan:
+
+X → Fase E
+XI → Fase F
+XII → Fase F
+
+Kemudian ambil CP terbaru.
+
+Generator harus selalu menggunakan CP yang terakhir disimpan Admin.
+
+==================================================
+12. UPDATE CP
+==================================================
+
+Jika Admin mengedit CP:
+
+UPDATE persistent storage.
+
+Setelah berhasil:
+
+generator berikutnya langsung menggunakan CP terbaru.
+
+Tidak perlu restart server.
+
+Tidak perlu edit source code.
+
+Tidak perlu publish ulang.
+
+==================================================
+13. DELETE CP
+==================================================
+
+Jika Admin memilih Hapus:
+
+hapus record CP dari persistent storage.
+
+Gunakan konfirmasi.
+
+Setelah dihapus:
+
+generator harus menganggap CP tidak tersedia,
+kecuali terdapat default/seed CP yang memang sengaja digunakan.
+
+==================================================
+14. DAFTAR CP ADMIN
+==================================================
+
+Halaman:
+
+Kelola CP
+
+harus membaca daftar CP dari backend/persistent storage.
+
+Jangan hanya membaca window.cpData.
+
+Setelah Simpan/Edit/Hapus:
+
+refresh daftar otomatis.
+
+==================================================
+15. STATUS CP
+==================================================
+
+Setelah data berhasil disimpan tampilkan:
+
+✓ CP berhasil disimpan
+
+Tampilkan:
+
+Mapel
+Fase
+Tahun
+Regulasi
+Status
+
+Status:
+
+✓ Tersimpan
+
+==================================================
+16. REFRESH TEST
+==================================================
+
+WAJIB TEST:
+
+Admin input satu CP
+→ Simpan
+→ CP muncul
+
+Kemudian:
+
+REFRESH browser.
+
+Expected:
+
+CP MASIH ADA.
+
+==================================================
+17. RESTART TEST
+==================================================
+
+Setelah CP tersimpan:
+
+restart server.
+
+Buka kembali Kelola CP.
+
+Expected:
+
+CP MASIH ADA.
+
+Jika hilang:
+
+storage belum persisten.
+
+Jangan menyatakan fitur selesai.
+
+==================================================
+18. PUBLISHED TEST
+==================================================
+
+Test pada Published App.
+
+Admin simpan CP.
+
+Refresh Published App.
+
+Expected:
+
+CP tetap ada.
+
+Restart/redeploy jika memungkinkan.
+
+Expected:
+
+CP tetap ada.
+
+Jika Preview dan Published menggunakan storage berbeda,
+LAPORKAN dengan jelas.
+
+Jangan menyembunyikan masalah tersebut.
+
+==================================================
+19. GENERATOR TEST
+==================================================
+
+Setelah CP disimpan:
+
+buka Generator Instrumen.
+
+Pilih mapel dan kelas yang CP-nya baru disimpan.
+
+Expected:
+
+pesan:
+
+"CP resmi belum tersedia"
+
+TIDAK muncul.
+
+Generator harus menemukan CP tersebut.
+
+==================================================
+20. AI TEST
+==================================================
+
+Ketika Modul Ajar dibuat:
+
+AI harus menerima CP yang berasal dari persistent storage.
+
+Jangan meminta AI mencari CP sendiri.
+
+==================================================
+21. SECURITY
+==================================================
+
+Hanya Admin boleh:
+
+POST CP
+UPDATE CP
+DELETE CP
+
+Guru/public boleh membaca CP yang diperlukan generator,
+tetapi tidak boleh mengubahnya.
+
+Endpoint perubahan data wajib mengecek session role:
+
+admin
+
+==================================================
+22. JANGAN SENTUH
+==================================================
+
+JANGAN mengubah:
+
+Login Guru
+Login Admin
+AI_API_KEY
+struktur Modul Ajar
+ATP
+KKTP
+Prota
+Prosem
+AME
+Daftar Nilai
+PDF
+Word
+Excel
+UI utama
+
+kecuali integrasi minimum yang diperlukan agar generator membaca
+persistent CP.
+
+==================================================
+23. JANGAN BUAT FITUR BARU
+==================================================
+
+Jangan membuat:
+
+user management
+cloud dashboard
+analytics
+history dokumen
+payment
+subscription
+Google login
+multi-admin
+
+==================================================
+24. TEST FINAL
+==================================================
+
+Lakukan hanya:
+
+TEST 1:
+Admin simpan CP → SUCCESS
+
+TEST 2:
+Refresh → CP tetap ada
+
+TEST 3:
+Restart server → CP tetap ada
+
+TEST 4:
+Edit CP → perubahan tersimpan
+
+TEST 5:
+Generator membaca CP terbaru
+
+TEST 6:
+Guru/non-admin tidak dapat mengubah CP
+
+==================================================
+25. STOP
+==================================================
+
+Setelah persistent CP bekerja:
+
+STOP.
+
+Jangan refactor.
+Jangan redesign.
+Jangan menambah fitur.
+
+Laporan akhir:
+
+STORAGE TYPE:
+PERSISTENT: YES / NO
+
+CREATE CP:
+UPDATE CP:
+DELETE CP:
+LOAD AFTER REFRESH:
+LOAD AFTER SERVER RESTART:
+PUBLISHED STORAGE:
+GENERATOR READS ADMIN CP:
+ADMIN PROTECTION:
+
+FILES MODIFIED:
+
+BLOCKING ISSUE:
+
+PENTING:
+CP TIDAK BOLEH HILANG SETELAH REFRESH, RESTART, ATAU REDEPLOY.
