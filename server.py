@@ -107,17 +107,21 @@ def build_user_prompt(payload: dict) -> str:
     )
 
 
-def validate_ai_output(html: str) -> bool:
+def validate_ai_output(html: str):
     if not html or not html.strip():
-        return False
+        return False, ["output kosong"]
     lowered = html.lower()
-    checks = [
-        "capaian pembelajaran" in lowered,
-        "tujuan pembelajaran" in lowered,
-        "kegiatan pembelajaran" in lowered,
-        "asesmen" in lowered,
-    ]
-    return all(checks)
+    checks = {
+        "capaian pembelajaran": "capaian pembelajaran" in lowered,
+        "tujuan pembelajaran": "tujuan pembelajaran" in lowered,
+        "kegiatan pembelajaran": (
+            "kegiatan pembelajaran" in lowered
+            or "langkah-langkah pembelajaran" in lowered
+        ),
+        "asesmen": ("asesmen" in lowered or "penilaian" in lowered),
+    }
+    missing = [name for name, present in checks.items() if not present]
+    return (not missing), missing
 
 
 def call_ai(payload: dict) -> dict:
@@ -180,8 +184,15 @@ def call_ai(payload: dict) -> dict:
 
     raw_html = raw_html.strip()
     sanitized = sanitize_html(raw_html)
-    if not validate_ai_output(sanitized):
-        return {"error": "Hasil AI belum memenuhi struktur dokumen. Silakan coba kembali."}
+    ok, missing = validate_ai_output(sanitized)
+    if not ok:
+        # Persist what AI actually returned so we can diagnose intermittent validation failures.
+        try:
+            with open("/tmp/ai-last-response.html", "w") as f:
+                f.write(sanitized)
+        except Exception:
+            pass
+        return {"error": f"Hasil AI belum memenuhi struktur ({', '.join(missing)}). Silakan coba kembali."}
 
     return {"html": sanitized}
 
