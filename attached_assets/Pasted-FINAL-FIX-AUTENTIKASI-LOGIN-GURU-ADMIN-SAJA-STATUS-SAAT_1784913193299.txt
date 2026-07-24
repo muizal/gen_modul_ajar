@@ -1,0 +1,450 @@
+FINAL FIX AUTENTIKASI — LOGIN GURU & ADMIN SAJA
+
+STATUS SAAT INI:
+
+✓ Menu Kelola CP sudah terkunci dengan benar.
+✓ Jangan ubah lagi sistem visibility/authorization Kelola CP.
+
+MASALAH YANG TERSISA:
+
+1. Login Guru bermasalah pada versi published.
+2. Login Admin masih bermasalah.
+3. Login harus bekerja di Replit Preview DAN Published App.
+
+JANGAN:
+- redesign
+- refactor besar
+- mengubah Kelola CP
+- mengubah CP
+- mengubah AI
+- mengubah generator dokumen
+- install package baru
+- membuat sistem autentikasi baru
+
+==================================================
+1. GUNAKAN SATU SISTEM LOGIN
+==================================================
+
+Gunakan SATU endpoint existing:
+
+POST /api/login
+
+untuk:
+
+GURU
+dan
+ADMIN.
+
+Jangan gunakan validasi frontend terpisah.
+
+==================================================
+2. LOGIN GURU
+==================================================
+
+Pertahankan kredensial existing:
+
+username:
+guru
+
+password:
+merdeka2026
+
+Validasi dilakukan oleh server.py.
+
+Expected response:
+
+{
+  "success": true,
+  "role": "guru"
+}
+
+==================================================
+3. LOGIN ADMIN
+==================================================
+
+Admin menggunakan environment variables:
+
+ADMIN_USERNAME
+ADMIN_PASSWORD
+
+Jangan hardcode Admin password di frontend.
+
+Server membaca:
+
+os.environ.get("ADMIN_USERNAME")
+os.environ.get("ADMIN_PASSWORD")
+
+Expected:
+
+{
+  "success": true,
+  "role": "admin"
+}
+
+==================================================
+4. DIAGNOSIS ENDPOINT TERLEBIH DAHULU
+==================================================
+
+Sebelum mengubah kode, TEST runtime:
+
+GET /api/login-status
+
+pada:
+
+A. Replit Preview
+B. Published App
+
+Endpoint harus menghasilkan JSON.
+
+Catat:
+
+Preview:
+/api/login-status = JSON / 404 / HTML / ERROR
+
+Published:
+/api/login-status = JSON / 404 / HTML / ERROR
+
+Jika Published menghasilkan 404 atau HTML:
+
+STOP memperbaiki fungsi login.
+
+Masalahnya adalah Published Deployment tidak menjalankan server.py.
+
+Perbaiki deployment agar menjalankan backend existing:
+
+python server.py
+
+JANGAN memindahkan login ke frontend.
+
+==================================================
+5. TEST POST /api/login LANGSUNG
+==================================================
+
+Jangan mulai dari form browser.
+
+Test endpoint langsung.
+
+TEST GURU:
+
+POST /api/login
+
+{
+  "username": "guru",
+  "password": "merdeka2026"
+}
+
+Expected:
+
+success = true
+role = guru
+
+
+TEST ADMIN:
+
+gunakan ADMIN_USERNAME dan ADMIN_PASSWORD dari environment.
+
+Expected:
+
+success = true
+role = admin
+
+Jangan tampilkan password Admin pada log.
+
+==================================================
+6. JIKA GURU ENDPOINT GAGAL
+==================================================
+
+Periksa server.py.
+
+Pastikan credentials Guru existing masih:
+
+GURU_USERNAME = "guru"
+GURU_PASSWORD = "merdeka2026"
+
+dan /api/login benar-benar memvalidasinya.
+
+Perbaiki hanya jika rusak.
+
+==================================================
+7. JIKA ADMIN ENDPOINT GAGAL
+==================================================
+
+Periksa:
+
+ADMIN_USERNAME configured?
+ADMIN_PASSWORD configured?
+
+Gunakan endpoint:
+
+GET /api/login-status
+
+Expected:
+
+admin_username_configured = true
+admin_password_configured = true
+
+Jika false:
+
+JANGAN membuat fallback Admin.
+
+Laporkan bahwa Secrets belum tersedia pada runtime.
+
+==================================================
+8. PERIKSA DEPLOYMENT SECRETS
+==================================================
+
+PENTING:
+
+Pastikan environment variables Admin tersedia bukan hanya pada
+Workspace/Preview tetapi juga pada Published Deployment runtime.
+
+Yang diperlukan:
+
+ADMIN_USERNAME
+ADMIN_PASSWORD
+AI_API_KEY
+
+Jangan print nilainya.
+
+Jika Secrets tersedia di Preview tetapi tidak di Published,
+perbaiki konfigurasi deployment/environment, bukan source login.
+
+==================================================
+9. FRONTEND LOGIN
+==================================================
+
+Setelah endpoint terbukti bekerja, periksa form login existing.
+
+Form harus melakukan:
+
+fetch('/api/login', {
+  method: 'POST',
+  credentials: 'include',
+  headers: {
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    username,
+    password
+  })
+})
+
+Gunakan endpoint relatif:
+
+/api/login
+
+JANGAN gunakan:
+localhost
+127.0.0.1
+URL Preview Replit
+URL hardcoded lain
+
+Ini penting agar login bekerja pada Preview dan Published.
+
+==================================================
+10. RESPONSE FRONTEND
+==================================================
+
+Jika response:
+
+success=true
+role=guru
+
+→ set status sebagai Guru.
+
+Jika:
+
+success=true
+role=admin
+
+→ set status sebagai Admin.
+
+Jangan melakukan validasi ulang password di frontend.
+
+==================================================
+11. SESSION COOKIE
+==================================================
+
+Pastikan backend mengirim session cookie setelah login berhasil.
+
+Frontend harus menggunakan:
+
+credentials: 'include'
+
+untuk login dan pengecekan session.
+
+Jangan menggunakan password di localStorage.
+
+==================================================
+12. PERIKSA COOKIE PUBLISHED
+==================================================
+
+Pastikan cookie session kompatibel dengan HTTPS Published App.
+
+Jika backend mempunyai konfigurasi cookie:
+
+Secure
+SameSite
+Path
+
+gunakan konfigurasi yang sesuai untuk same-origin Published App.
+
+Jangan membuat cookie lintas-domain jika frontend dan backend berada
+pada deployment yang sama.
+
+==================================================
+13. PAGE REFRESH
+==================================================
+
+Setelah login:
+
+refresh browser.
+
+Frontend harus memeriksa session existing melalui endpoint status
+yang sudah tersedia.
+
+Expected:
+
+Guru tetap dikenali sebagai guru.
+
+Admin tetap dikenali sebagai admin.
+
+==================================================
+14. LOGOUT
+==================================================
+
+Pertahankan logout existing.
+
+Logout harus menghapus session.
+
+Jangan ubah sistem Kelola CP yang sudah benar.
+
+==================================================
+15. PUBLISHED APP
+==================================================
+
+Pastikan Published App menjalankan backend Python existing.
+
+Deployment command harus menjalankan aplikasi server, misalnya:
+
+python server.py
+
+Gunakan PORT environment yang diberikan Replit.
+
+Jangan publish sebagai static site jika aplikasi membutuhkan:
+
+/api/login
+/api/generate
+/api/admin/*
+
+==================================================
+16. GITHUB
+==================================================
+
+GitHub hanya repository/sync source.
+
+Jangan mengandalkan GitHub Pages untuk menjalankan server.py.
+
+Jangan memindahkan:
+
+ADMIN_PASSWORD
+AI_API_KEY
+
+ke JavaScript agar GitHub Pages dapat bekerja.
+
+==================================================
+17. TEST FINAL
+==================================================
+
+Lakukan hanya test berikut.
+
+PREVIEW:
+
+1.
+guru / merdeka2026
+→ SUCCESS
+→ role guru
+
+2.
+Admin dari environment variables
+→ SUCCESS
+→ role admin
+
+
+PUBLISHED:
+
+3.
+GET /api/login-status
+→ JSON
+
+4.
+guru / merdeka2026
+→ SUCCESS
+→ role guru
+
+5.
+Admin dari environment variables
+→ SUCCESS
+→ role admin
+
+6.
+Refresh setelah login Guru
+→ masih login sebagai Guru
+
+7.
+Refresh setelah login Admin
+→ masih login sebagai Admin
+
+==================================================
+18. JANGAN SENTUH FITUR LAIN
+==================================================
+
+DILARANG mengubah:
+
+Kelola CP
+cp-data
+curriculum-map
+AI generator
+Modul Ajar
+LKPD
+Asesmen
+AME
+Prota
+Prosem
+ATP
+KKTP
+Daftar Nilai
+PDF
+Word
+Excel
+UI
+
+==================================================
+19. STOP
+==================================================
+
+Begitu login Guru dan Admin bekerja di Preview dan Published:
+
+STOP.
+
+Jangan melakukan pekerjaan tambahan.
+
+Laporan akhir HANYA:
+
+PREVIEW /api/login-status:
+PUBLISHED /api/login-status:
+
+PREVIEW GURU LOGIN:
+PREVIEW ADMIN LOGIN:
+
+PUBLISHED GURU LOGIN:
+PUBLISHED ADMIN LOGIN:
+
+ADMIN ENV PREVIEW: YES/NO
+ADMIN ENV PUBLISHED: YES/NO
+
+SESSION AFTER REFRESH: WORKING/ERROR
+
+DEPLOYMENT RUNS server.py: YES/NO
+
+ROOT CAUSE:
