@@ -1,0 +1,197 @@
+PERBAIKAN LOGIN SAJA — JANGAN KERJAKAN FITUR LAIN.
+
+Ada konflik autentikasi pada project existing.
+
+Saat ini login lama masih menggunakan:
+
+Username: guru
+Password: merdeka2026
+
+Sedangkan Admin CP seharusnya menggunakan:
+
+ADMIN_USERNAME
+ADMIN_PASSWORD
+
+yang pada Replit Secrets akan bernilai:
+
+ADMIN_USERNAME=sayangku
+ADMIN_PASSWORD=sayangku
+
+MASALAH:
+Saya mencoba login Admin tetapi tidak bisa. Form/login existing tampaknya masih hanya memvalidasi kredensial lama guru/merdeka2026.
+
+TUGAS HANYA PERBAIKI AUTENTIKASI INI.
+
+1. PERTAHANKAN LOGIN GURU
+
+Login:
+
+guru
+merdeka2026
+
+tetap boleh digunakan sebagai role:
+
+guru
+
+Akses:
+- Generator dokumen
+- Preview
+- Download/export
+
+Tetapi role guru TIDAK boleh mengakses:
+
+Kelola CP
+Tambah CP
+Edit CP
+Hapus CP
+
+2. LOGIN ADMIN
+
+Admin harus diverifikasi menggunakan environment variables:
+
+ADMIN_USERNAME
+ADMIN_PASSWORD
+
+JANGAN hardcode password Admin di frontend.
+
+Jika:
+
+username === process.env.ADMIN_USERNAME
+
+dan password cocok dengan:
+
+process.env.ADMIN_PASSWORD
+
+maka role:
+
+admin
+
+3. AKSES ADMIN
+
+Admin mempunyai akses:
+
+- Generator
+- Kelola CP
+- Tambah CP
+- Edit CP
+- Hapus CP
+- Upload/import CP
+- Download/export
+
+Setelah login Admin berhasil, tampilkan tombol/menu:
+
+"Kelola CP"
+
+4. JANGAN GUNAKAN handleLogin() FRONTEND LAMA UNTUK MEMVALIDASI PASSWORD ADMIN
+
+Jika login existing masih melakukan pengecekan seperti:
+
+username === "guru"
+password === "merdeka2026"
+
+ubah alurnya sehingga kredensial Admin dikirim ke backend untuk diverifikasi.
+
+Jangan expose:
+
+ADMIN_USERNAME
+ADMIN_PASSWORD
+
+ke frontend.
+
+5. BOLEH PERTAHANKAN LOGIN GURU EXISTING
+
+Jangan refactor login guru jika tidak diperlukan.
+
+Perbaiki hanya supaya sistem dapat membedakan:
+
+role = "guru"
+
+dan
+
+role = "admin"
+
+6. SESSION
+
+Setelah Admin berhasil login:
+
+simpan session Admin menggunakan mekanisme backend/session existing yang paling sederhana.
+
+Endpoint Tambah/Edit/Hapus CP harus mengecek bahwa:
+
+role === "admin"
+
+Jangan hanya menyembunyikan tombol di frontend.
+
+7. LOGOUT
+
+Logout harus membersihkan session/status login.
+
+Setelah logout:
+
+Kelola CP tidak dapat diakses.
+
+8. JANGAN SENTUH
+
+JANGAN mengubah:
+
+- CP
+- curriculum-map
+- AI API
+- AI_API_KEY
+- generator dokumen
+- UI utama
+- PDF
+- Word
+- Excel
+- Modul Ajar
+- ATP
+- KKTP
+- Prota
+- Prosem
+
+JANGAN redesign.
+JANGAN install package.
+JANGAN refactor project.
+
+9. TEST HANYA DUA LOGIN
+
+TEST A:
+
+guru / merdeka2026
+
+Expected:
+LOGIN BERHASIL sebagai GURU.
+Kelola CP tidak tersedia.
+
+TEST B:
+
+gunakan ADMIN_USERNAME dan ADMIN_PASSWORD dari environment variables.
+
+Expected:
+LOGIN BERHASIL sebagai ADMIN.
+Menu Kelola CP tersedia.
+
+Jika environment variables belum tersedia, laporkan:
+
+"ADMIN_USERNAME / ADMIN_PASSWORD belum dikonfigurasi."
+
+JANGAN membuat fallback password Admin.
+
+10. STOP
+
+Setelah kedua role login bekerja:
+
+STOP.
+
+Jangan melakukan perubahan lain.
+
+Laporan:
+
+GURU LOGIN: WORKING / ERROR
+ADMIN LOGIN: WORKING / ERROR
+ADMIN SESSION: WORKING / ERROR
+KELOLA CP ACCESS: WORKING / ERROR
+BLOCKING ERROR: ...
+
+KREDIT REPLIT HAMPIR HABIS.
+PERBAIKI HANYA LOGIN.

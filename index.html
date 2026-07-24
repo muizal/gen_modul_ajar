@@ -1115,7 +1115,9 @@
 
         // --- STREAMING_CHUNK:Logika Autentikasi dan Ekspor Dokumen Microsoft Office ---
         let isAdmin = false;
+        let isGuru = false;
         let isLoggedIn = false;
+        let currentRole = null; // 'admin' | 'guru' | null
         window.addEventListener('DOMContentLoaded', () => { refreshAdminSession(); });
 
         function updateAuthUI() {
@@ -1125,8 +1127,12 @@
                 btn.innerHTML = '<i class="fas fa-sign-out-alt"></i> Logout Admin';
                 btn.classList.remove('text-slate-700'); btn.classList.add('text-red-600');
                 if (adminBtn) adminBtn.classList.remove('hidden');
+            } else if (isGuru) {
+                btn.innerHTML = '<i class="fas fa-sign-out-alt"></i> Logout';
+                btn.classList.remove('text-red-600'); btn.classList.add('text-slate-700');
+                if (adminBtn) adminBtn.classList.add('hidden');
             } else {
-                btn.innerHTML = '<i class="fas fa-lock"></i> Login Admin';
+                btn.innerHTML = '<i class="fas fa-lock"></i> Login';
                 btn.classList.remove('text-red-600'); btn.classList.add('text-slate-700');
                 if (adminBtn) adminBtn.classList.add('hidden');
             }
@@ -1144,8 +1150,11 @@
             else { modal.classList.add('hidden'); }
         };
         window.handleAuthClick = function() {
-            if(isAdmin) {
-                if(confirm("Logout? Sesi Admin akan ditutup dan akses unduh generator akan mati.")) {
+            if(isAdmin || isGuru) {
+                const msg = isAdmin
+                    ? "Logout? Sesi Admin akan ditutup dan akses unduh generator akan mati."
+                    : "Logout? Akses unduh generator akan ditutup.";
+                if(confirm(msg)) {
                     adminLogout().then(() => { showToast("Logout berhasil."); });
                 }
             } else {
@@ -1162,7 +1171,7 @@
             if (errEl) errEl.classList.add('hidden');
             if (secretsEl) secretsEl.classList.add('hidden');
             try {
-                const res = await fetch('/api/admin/login', {
+                const res = await fetch('/api/auth/login', {
                     method: 'POST',
                     credentials: 'include',
                     headers: { 'Content-Type': 'application/json' },
@@ -1170,12 +1179,16 @@
                 });
                 const data = await res.json().catch(() => ({}));
                 if (res.ok && data.ok) {
-                    isAdmin = true; isLoggedIn = true; updateAuthUI();
+                    currentRole = data.role || 'guru';
+                    isAdmin = currentRole === 'admin';
+                    isLoggedIn = true;
+                    isGuru = currentRole === 'guru';
+                    updateAuthUI();
                     document.getElementById('login-username').value = '';
                     document.getElementById('login-password').value = '';
                     toggleLoginModal(false);
-                    showToast("Login Admin berhasil.");
-                    await adminRefreshStorage();
+                    showToast(currentRole === 'admin' ? "Login Admin berhasil." : "Login Guru berhasil.");
+                    if (isAdmin) await adminRefreshStorage();
                 } else if (res.status === 503) {
                     if (secretsEl) secretsEl.classList.remove('hidden');
                 } else {
@@ -1188,9 +1201,10 @@
 
         async function adminLogout() {
             try {
-                await fetch('/api/admin/logout', { method: 'POST', credentials: 'include' });
+                await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
             } catch (err) { /* ignore */ }
-            isAdmin = false; isLoggedIn = false;
+            currentRole = null;
+            isAdmin = false; isLoggedIn = false; isGuru = false;
             window.cpAdmin = {};
             updateAuthUI();
         }
@@ -1199,12 +1213,16 @@
             try {
                 const res = await fetch('/api/admin/status', { credentials: 'include' });
                 const data = await res.json();
-                isAdmin = !!data.admin;
-                isLoggedIn = isAdmin;
+                const role = data.role || null;
+                currentRole = role;
+                isAdmin = role === 'admin';
+                isGuru = role === 'guru';
+                isLoggedIn = !!role;
                 updateAuthUI();
                 if (isAdmin) await adminRefreshStorage();
             } catch (err) {
-                isAdmin = false; isLoggedIn = false; updateAuthUI();
+                currentRole = null;
+                isAdmin = false; isLoggedIn = false; isGuru = false; updateAuthUI();
             }
         }
 

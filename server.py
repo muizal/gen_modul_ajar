@@ -29,6 +29,10 @@ SESSION_SECRET = os.environ.get("SESSION_SECRET", "replit-default-session-secret
 DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
 CP_STORAGE_PATH = os.path.join(DATA_DIR, "cp-storage.json")
 
+# Guru credentials (existing login kept — role = "guru", no CP management).
+GURU_USERNAME = "guru"
+GURU_PASSWORD = "merdeka2026"
+
 AGAMA_MAPEL = {"PAI", "PAK", "Katolik", "Hindu", "Buddha"}
 AGAMA_REGULASI = {
     "institution": "Kemendikdasmen",
@@ -278,7 +282,11 @@ class RequestHandler(SimpleHTTPRequestHandler):
     def do_GET(self):
         parsed = urlparse(self.path)
         if parsed.path == "/api/admin/status":
-            self.send_json({"admin": is_admin(self), "configured": bool(ADMIN_USERNAME and ADMIN_PASSWORD)})
+            self.send_json({
+                "admin": is_admin(self),
+                "role": session_role(self),
+                "configured": bool(ADMIN_USERNAME and ADMIN_PASSWORD),
+            })
             return
         if parsed.path == "/api/admin/cp":
             if not is_admin(self):
@@ -291,30 +299,51 @@ class RequestHandler(SimpleHTTPRequestHandler):
     def do_POST(self):
         parsed = urlparse(self.path)
 
-        if parsed.path == "/api/admin/login":
+        if parsed.path in ("/api/auth/login", "/api/auth/admin-login", "/api/admin/login"):
             data = self.read_json_body()
             if not isinstance(data, dict):
                 self.send_json({"error": "Body tidak valid."}, status=400)
                 return
-            if not ADMIN_USERNAME or not ADMIN_PASSWORD:
-                self.send_json({"error": "Admin Secrets belum dikonfigurasi."}, status=503)
-                return
             u = (data.get("username") or "").strip()
             p = (data.get("password") or "").strip()
-            if hmac.compare_digest(u, ADMIN_USERNAME) and hmac.compare_digest(p, ADMIN_PASSWORD):
-                token = make_session_token()
+
+            # Cek role guru (login guru yang selama ini dipakai).
+            if hmac.compare_digest(u, GURU_USERNAME) and hmac.compare_digest(p, GURU_PASSWORD):
+                token = make_session_token("guru")
                 cookie = (
-                    f"admin_session={token}; Path=/; HttpOnly; SameSite=Strict; "
+                    f"guru_session={token}; Path=/; HttpOnly; SameSite=Strict; "
                     f"Max-Age={SESSION_TTL_SECONDS}"
                 )
-                self.send_json({"ok": True}, extra_headers={"Set-Cookie": cookie})
-            else:
-                self.send_json({"error": "Username atau password salah."}, status=401)
+                self.send_json({"ok": True, "role": "guru"}, extra_headers={"Set-Cookie": cookie})
+                return
+
+            # Cek role admin dari environment variables. Credentials TIDAK pernah dipetakan ke frontend.
+            if ADMIN_USERNAME and ADMIN_PASSWORD:
+                if hmac.compare_digest(u, ADMIN_USERNAME) and hmac.compare_digest(p, ADMIN_PASSWORD):
+                    token = make_session_token("admin")
+                    cookie = (
+                        f"admin_session={token}; Path=/; HttpOnly; SameSite=Strict; "
+                        f"Max-Age={SESSION_TTL_SECONDS}"
+                    )
+                    self.send_json({"ok": True, "role": "admin"}, extra_headers={"Set-Cookie": cookie})
+                    return
+
+            if not ADMIN_USERNAME or not ADMIN_PASSWORD:
+                self.send_json({"error": "ADMIN_USERNAME / ADMIN_PASSWORD belum dikonfigurasi."}, status=503)
+                return
+            self.send_json({"error": "Username atau password salah."}, status=401)
             return
 
-        if parsed.path == "/api/admin/logout":
-            cookie = "admin_session=; Path=/; HttpOnly; SameSite=Strict; Max-Age=0"
-            self.send_json({"ok": True}, extra_headers={"Set-Cookie": cookie})
+        if parsed.path in ("/api/auth/logout", "/api/admin/logout"):
+            # Clear both cookie names so a single logout ends every session.
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Access-Control-Allow-Origin", "*")
+            self.send_header("Access-Control-Allow-Credentials", "true")
+            self.send_header("Set-Cookie", "admin_session=; Path=/; HttpOnly; SameSite=Strict; Max-Age=0")
+            self.send_header("Set-Cookie", "guru_session=; Path=/; HttpOnly; SameSite=Strict; Max-Age=0")
+            self.end_headers()
+            self.wfile.write(json.dumps({"ok": True}).encode("utf-8"))
             return
 
         if parsed.path == "/api/admin/cp":
@@ -394,26 +423,32 @@ def regulasi_untuk(mapel):
     return dict(AGAMA_REGULASI if mapel in AGAMA_MAPEL else NON_AGAMA_REGULASI)
 
 
-def make_session_token():
+def make_session_token(role):
     ts = str(int(time.time()))
-    sig = hmac.new(SESSION_SECRET.encode("utf-8"), ts.encode("utf-8"), hashlib.sha256).hexdigest()
-    return f"{ts}.{sig}"
+    payload = f"{role}|{ts}"
+    sig = hmac.new(SESSION_SECRET.encode("utf-8"), payload.encode("utf-8"), hashlib.sha256).hexdigest()
+    return f"{role}|{ts}.{sig}"
 
 
-def verify_session(cookie_header):
+def verify_role_cookie(cookie_header, expected_role):
     if not cookie_header:
         return False
     token = None
+    cookie_name = "admin_session" if expected_role == "admin" else "guru_session"
     for part in cookie_header.split(";"):
         part = part.strip()
-        if part.startswith("admin_session="):
-            token = part[len("admin_session="):]
+        if part.startswith(f"{cookie_name}="):
+            token = part[len(cookie_name) + 1:]
             break
-    if not token or "." not in token:
+    if not token:
         return False
     try:
-        ts, sig = token.split(".", 1)
-        expected = hmac.new(SESSION_SECRET.encode("utf-8"), ts.encode("utf-8"), hashlib.sha256).hexdigest()
+        role, rest = token.split("|", 1)
+        ts, sig = rest.split(".", 1)
+        if role != expected_role:
+            return False
+        payload = f"{role}|{ts}"
+        expected = hmac.new(SESSION_SECRET.encode("utf-8"), payload.encode("utf-8"), hashlib.sha256).hexdigest()
         if not hmac.compare_digest(sig, expected):
             return False
         return (time.time() - int(ts)) < SESSION_TTL_SECONDS
@@ -421,8 +456,24 @@ def verify_session(cookie_header):
         return False
 
 
+def verify_session(cookie_header):
+    # Backward compatible: admin session check.
+    return verify_role_cookie(cookie_header, "admin")
+
+
 def is_admin(handler):
-    return verify_session(handler.headers.get("Cookie", ""))
+    return verify_role_cookie(handler.headers.get("Cookie", ""), "admin")
+
+
+def is_guru(handler):
+    return verify_role_cookie(handler.headers.get("Cookie", ""), "guru")
+
+
+def session_role(handler):
+    for role in ("admin", "guru"):
+        if verify_role_cookie(handler.headers.get("Cookie", ""), role):
+            return role
+    return None
 
 
 def load_storage():
