@@ -1,0 +1,475 @@
+FINAL DATA INTEGRATION — MODE DARURAT HEMAT KREDIT
+
+Kredit Replit hampir habis.
+
+JANGAN MEMBUAT ULANG PROJECT.
+JANGAN REDESIGN.
+JANGAN REFACTOR BESAR.
+JANGAN INSTALL PACKAGE.
+JANGAN MEMBUAT DATABASE BARU.
+JANGAN MEMBUAT FITUR BARU.
+JANGAN MENGUBAH BACKEND AI YANG SUDAH BERFUNGSI.
+
+MASALAH SAAT INI:
+
+Ketika pengguna memilih:
+- mata pelajaran
+- kelas
+- Modul Ajar
+
+aplikasi menampilkan:
+
+"CP resmi untuk mapel ini belum tersedia"
+
+dan dropdown Topik kosong.
+
+API KEY sudah dikonfigurasi.
+
+TUGAS UTAMA:
+Perbaiki ALUR DATA CP → KELAS → TOPIK sehingga seluruh mata pelajaran SMA yang memiliki data dapat menggunakan generator.
+
+==================================================
+1. JANGAN MENGARANG CP
+==================================================
+
+DILARANG:
+
+- meminta AI membuat CP
+- membuat CP berdasarkan pengetahuan model
+- membuat CP dummy
+- membuat CP generik
+- membuat fallback CP
+- mengarang nomor regulasi
+
+CP hanya boleh berasal dari:
+
+/data/cp-data.js
+
+Jika CP belum ada, biarkan status:
+
+"CP resmi belum tersedia."
+
+==================================================
+2. PASTIKAN FILE DATA DIBACA
+==================================================
+
+Periksa bahwa:
+
+/data/cp-data.js
+
+benar-benar dimuat SEBELUM script utama aplikasi.
+
+Pastikan:
+
+window.cpData
+
+tersedia saat aplikasi berjalan.
+
+Jangan mengubah struktur project jika tidak diperlukan.
+
+==================================================
+3. PERIKSA MAPPING KELAS → FASE
+==================================================
+
+Pastikan:
+
+X → E
+XI → F
+XII → F
+
+Gunakan helper existing:
+
+getPhaseFromClass(kelas)
+
+Jangan membuat mapping lain.
+
+==================================================
+4. PERBAIKI getCPData()
+==================================================
+
+Pastikan:
+
+getCPData(mapel, fase)
+
+mengambil data dari:
+
+window.cpData[mapel][fase]
+
+atau struktur existing yang setara.
+
+Jika tidak ditemukan:
+
+return null;
+
+JANGAN fallback.
+
+==================================================
+5. PERBAIKI hasCPData()
+==================================================
+
+CP dianggap tersedia hanya jika:
+
+data tersedia
+
+DAN
+
+data.cp bukan string kosong.
+
+Jangan menganggap curriculumMap sebagai CP.
+
+==================================================
+6. PERIKSA KEY MAPEL
+==================================================
+
+Ini sangat penting.
+
+Pastikan value dropdown mapel sama dengan key yang digunakan pada:
+
+cp-data.js
+
+dan
+
+curriculum-map.js.
+
+Contoh:
+
+Dropdown:
+value="B.Inggris"
+
+maka data juga harus menggunakan:
+
+"B.Inggris"
+
+Jangan sampai:
+
+"Bahasa Inggris"
+"B.Inggris"
+"English"
+
+digunakan sebagai key berbeda.
+
+Lakukan pengecekan untuk SELURUH mapel SMA yang sudah ada di dropdown.
+
+Jangan menambah mapel baru pada tahap ini.
+
+==================================================
+7. TOPIK TIDAK BOLEH BERGANTUNG PADA CP TEXT
+==================================================
+
+Topik berasal dari:
+
+curriculum-map.js
+
+Alurnya:
+
+Mapel
+→ Kelas
+→ curriculumMap[mapel][kelas]
+→ Topik
+
+Jangan membuat dropdown topik kosong hanya karena CP belum tersedia.
+
+Artinya:
+
+Jika curriculumMap tersedia:
+TOPIK BOLEH DITAMPILKAN.
+
+Tetapi ketika pengguna menekan:
+"Buat Dokumen"
+
+untuk dokumen yang membutuhkan CP:
+
+baru lakukan validasi CP.
+
+Jika CP kosong:
+STOP.
+
+Dengan demikian pengguna tetap dapat melihat pemetaan materi meskipun CP belum diisi.
+
+==================================================
+8. PASTIKAN curriculum-map.js DIMUAT
+==================================================
+
+Pastikan:
+
+/data/curriculum-map.js
+
+dimuat sebelum script aplikasi yang menggunakan datanya.
+
+Pastikan:
+
+window.curriculumMap
+
+tersedia.
+
+==================================================
+9. getCurriculumData()
+==================================================
+
+Pastikan fungsi:
+
+getCurriculumData(mapel, kelas)
+
+hanya membaca:
+
+window.curriculumMap[mapel][kelas]
+
+Jika tersedia:
+return data;
+
+Jika tidak:
+return [];
+
+JANGAN membuat fallback materi.
+
+==================================================
+10. DROPDOWN TOPIK
+==================================================
+
+Ketika user memilih:
+
+Mapel
++
+Kelas
+
+langsung jalankan:
+
+getCurriculumData(mapel, kelas)
+
+dan isi dropdown topik.
+
+Jangan menunggu AI.
+
+Jangan memanggil API.
+
+Jangan meminta AI menghasilkan topik.
+
+==================================================
+11. SAAT TOPIK DIPILIH
+==================================================
+
+Isi otomatis:
+
+Topik
+TP
+JP
+Pertemuan
+
+berdasarkan curriculumMap.
+
+Pastikan field existing:
+
+gen-topik
+gen-tp
+gen-jp
+gen-pertemuan
+
+tetap digunakan.
+
+==================================================
+12. SEMESTER
+==================================================
+
+Jika data curriculumMap mempunyai:
+
+semester: "Ganjil"
+
+atau:
+
+semester: "Genap"
+
+filter topik sesuai semester yang dipilih.
+
+Jika data existing belum mempunyai semester:
+
+jangan lakukan refactor besar.
+
+Pertahankan perilaku existing.
+
+==================================================
+13. SELURUH MAPEL SMA EXISTING
+==================================================
+
+Periksa kompatibilitas key untuk mapel yang SUDAH ADA di dropdown seperti:
+
+Pendidikan Agama Islam
+Pendidikan Agama Kristen
+Pendidikan Agama Katolik
+Pendidikan Agama Hindu
+Pendidikan Agama Buddha
+
+Pendidikan Pancasila
+Bahasa Indonesia
+Matematika
+Bahasa Inggris
+Sejarah
+PJOK
+
+Fisika
+Kimia
+Biologi
+Geografi
+Sosiologi
+Ekonomi
+
+Matematika Tingkat Lanjut
+Bahasa Inggris Tingkat Lanjut
+dan mapel tingkat lanjut lain yang memang SUDAH ada.
+
+JANGAN membuat CP untuk mapel-mapel tersebut.
+
+Hanya pastikan key konsisten.
+
+==================================================
+14. AI TETAP DIKUNCI OLEH CP
+==================================================
+
+Untuk:
+
+Modul Ajar
+LKPD
+Asesmen
+
+alur:
+
+Pilih Mapel
+→ Kelas
+→ Topik
+→ ambil CP
+→ ambil TP
+→ kirim ke /api/generate
+
+Jika CP kosong:
+
+JANGAN panggil AI.
+
+Tampilkan:
+
+"CP resmi untuk mata pelajaran dan fase ini belum tersedia."
+
+==================================================
+15. JIKA CP SUDAH TERSEDIA
+==================================================
+
+Kirim ke backend:
+
+mapel
+kelas
+fase
+semester
+CP
+elements
+TP
+topik
+JP
+pertemuan
+
+Jangan meminta backend mencari CP sendiri.
+
+==================================================
+16. JANGAN SENTUH API KEY
+==================================================
+
+API KEY sudah dikonfigurasi.
+
+JANGAN:
+
+- mengganti nama secret
+- menampilkan secret
+- hardcode key
+- memindahkan key ke frontend
+
+Gunakan implementasi environment variable existing.
+
+==================================================
+17. DOKUMEN NON-AI
+==================================================
+
+Jangan rusak:
+
+AME
+Prota
+Prosem
+ATP
+KKTP
+Daftar Nilai
+PDF
+Word
+Excel
+
+==================================================
+18. TEST SANGAT MINIMAL
+==================================================
+
+HANYA lakukan:
+
+TEST 1
+
+Pilih salah satu mapel + kelas yang mempunyai curriculumMap.
+
+Pastikan dropdown Topik muncul.
+
+TEST 2
+
+Pilih topik.
+
+Pastikan:
+
+TP
+JP
+Pertemuan
+
+terisi.
+
+TEST 3
+
+Jika CP kosong:
+
+klik Buat Dokumen.
+
+Pastikan AI TIDAK dipanggil.
+
+TEST 4
+
+Jika ada satu mapel/fase yang CP-nya sudah tersedia:
+
+buat SATU Modul Ajar.
+
+Pastikan:
+
+CP
++
+TP
++
+Topik
+
+dikirim ke endpoint AI dan hasil tampil di preview.
+
+JANGAN melakukan test berulang.
+
+==================================================
+19. STOP
+==================================================
+
+Setelah alur data bekerja:
+
+STOP.
+
+Jangan menambahkan fitur.
+Jangan redesign.
+Jangan refactor.
+Jangan membuat dashboard.
+Jangan menambah library.
+
+Berikan laporan maksimal:
+
+CP DATA LOADED: YES/NO
+CURRICULUM MAP LOADED: YES/NO
+TOPIC DROPDOWN: WORKING/ERROR
+AI ENDPOINT: WORKING/NOT TESTED
+BLOCKING ISSUE: ...
+
+KREDIT REPLIT HAMPIR HABIS.
+
+PRIORITAS MUTLAK:
+PERBAIKI HANYA ALUR DATA YANG MENGHALANGI APLIKASI.
