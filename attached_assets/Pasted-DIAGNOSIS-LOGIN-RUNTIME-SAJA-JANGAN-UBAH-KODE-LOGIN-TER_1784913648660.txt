@@ -1,0 +1,319 @@
+DIAGNOSIS LOGIN RUNTIME SAJA.
+
+JANGAN UBAH KODE LOGIN TERLEBIH DAHULU.
+
+Saya sudah memeriksa source code terbaru.
+
+server.py sudah mempunyai:
+
+GURU_USERNAME = "guru"
+GURU_PASSWORD = "merdeka2026"
+
+ADMIN_USERNAME = os.environ.get("ADMIN_USERNAME", "").strip()
+ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "").strip()
+
+Frontend juga sudah menggunakan:
+
+POST /api/login
+credentials: include
+
+Jadi JANGAN rewrite autentikasi.
+
+TUGAS ANDA HANYA MENCARI KENAPA RUNTIME LOGIN TIDAK BEKERJA.
+
+==================================================
+1. RESTART SERVER
+==================================================
+
+Restart workflow/server existing.
+
+Pastikan yang berjalan adalah:
+
+python server.py
+
+dan server listen pada:
+
+0.0.0.0
+
+dengan PORT environment atau port 5000.
+
+JANGAN menjalankan index.html sebagai static server.
+
+==================================================
+2. TEST BACKEND LANGSUNG
+==================================================
+
+Setelah server berjalan, test:
+
+GET /api/login-status
+
+Tampilkan hasil JSON-nya.
+
+Saya ingin mengetahui:
+
+logged_in
+role
+admin_username_configured
+admin_password_configured
+
+JANGAN tampilkan nilai username/password.
+
+==================================================
+3. TEST LOGIN GURU LANGSUNG
+==================================================
+
+Test POST langsung ke server:
+
+POST /api/login
+
+body:
+
+{
+  "username": "guru",
+  "password": "merdeka2026"
+}
+
+Expected:
+
+HTTP 200
+
+{
+  "success": true,
+  "role": "guru"
+}
+
+Jika gagal, tampilkan:
+
+HTTP STATUS
+RESPONSE BODY
+SERVER ERROR
+
+JANGAN langsung mengubah kode.
+
+Cari penyebab runtime terlebih dahulu.
+
+==================================================
+4. TEST LOGIN ADMIN LANGSUNG
+==================================================
+
+Jangan hardcode Admin.
+
+Gunakan ADMIN_USERNAME dan ADMIN_PASSWORD dari environment variables.
+
+Pertama pastikan:
+
+ADMIN_USERNAME configured = true
+ADMIN_PASSWORD configured = true
+
+Kemudian test POST /api/login menggunakan environment variables tersebut.
+
+Expected:
+
+HTTP 200
+
+{
+  "success": true,
+  "role": "admin"
+}
+
+JANGAN print password.
+
+==================================================
+5. JIKA ADMIN CONFIGURED = FALSE
+==================================================
+
+STOP.
+
+Jangan ubah source code.
+
+Laporkan:
+
+ADMIN_USERNAME NOT AVAILABLE IN RUNTIME
+
+atau:
+
+ADMIN_PASSWORD NOT AVAILABLE IN RUNTIME
+
+Saya akan memperbaiki Replit Secrets sendiri.
+
+==================================================
+6. JIKA LOGIN ENDPOINT BERHASIL
+==================================================
+
+Jika POST /api/login berhasil langsung dari server tetapi login browser gagal:
+
+JANGAN ubah backend login.
+
+Periksa browser request:
+
+POST /api/login
+
+Pastikan response browser adalah JSON yang sama.
+
+Periksa:
+
+status code
+response body
+Set-Cookie
+cookie guru_session/admin_session
+
+Perbaiki hanya masalah frontend/cookie jika ditemukan.
+
+==================================================
+7. TEST SESSION
+==================================================
+
+Setelah login Guru berhasil:
+
+GET /api/admin/status
+
+harus menghasilkan:
+
+role = guru
+
+Setelah login Admin berhasil:
+
+GET /api/admin/status
+
+harus menghasilkan:
+
+role = admin
+
+==================================================
+8. PERIKSA PUBLISHED DEPLOYMENT
+==================================================
+
+Setelah Preview selesai, periksa Published App.
+
+Buka:
+
+/api/login-status
+
+pada domain published.
+
+Expected:
+
+JSON.
+
+Jika mendapatkan:
+
+404
+HTML
+index.html
+
+maka Published App TIDAK menjalankan server.py.
+
+Jangan ubah login.
+
+Laporkan:
+
+PUBLISHED DEPLOYMENT IS STATIC / BACKEND NOT RUNNING
+
+==================================================
+9. JIKA PUBLISHED BACKEND TIDAK BERJALAN
+==================================================
+
+Periksa deployment configuration.
+
+Published App harus menjalankan:
+
+python server.py
+
+bukan static deployment.
+
+Backend dan frontend harus berada pada deployment/origin yang sama.
+
+Jangan pindahkan password atau API key ke frontend.
+
+==================================================
+10. SECRETS PUBLISHED
+==================================================
+
+Jika backend Published berjalan:
+
+periksa:
+
+ADMIN_USERNAME configured
+ADMIN_PASSWORD configured
+AI_API_KEY configured
+
+Jangan tampilkan nilainya.
+
+Jika Secrets tersedia di Workspace tetapi tidak Published runtime,
+laporkan itu sebagai ROOT CAUSE.
+
+==================================================
+11. JANGAN SENTUH FITUR LAIN
+==================================================
+
+JANGAN mengubah:
+
+Kelola CP
+CP
+curriculum-map
+AI
+Modul Ajar
+ATP
+KKTP
+Prota
+Prosem
+AME
+PDF
+Word
+Excel
+UI
+
+==================================================
+12. JANGAN REFACTOR LOGIN
+==================================================
+
+Kode /api/login sekarang sudah memiliki logika Guru dan Admin.
+
+JANGAN membuat endpoint login baru.
+
+JANGAN membuat login frontend-only.
+
+JANGAN hardcode Admin.
+
+JANGAN membuat fallback password.
+
+==================================================
+13. LAPORAN
+==================================================
+
+Setelah diagnosis, STOP.
+
+Berikan hasil persis:
+
+SERVER COMMAND:
+SERVER PORT:
+
+PREVIEW /api/login-status:
+HTTP:
+BODY:
+
+ADMIN_USERNAME CONFIGURED:
+ADMIN_PASSWORD CONFIGURED:
+
+DIRECT GURU LOGIN:
+HTTP:
+BODY:
+
+DIRECT ADMIN LOGIN:
+HTTP:
+BODY:
+
+GURU SESSION:
+ADMIN SESSION:
+
+PUBLISHED /api/login-status:
+HTTP:
+CONTENT TYPE:
+BODY TYPE: JSON / HTML / 404
+
+PUBLISHED BACKEND RUNNING:
+YES / NO
+
+ROOT CAUSE:
+
+JANGAN MELAKUKAN PEKERJAAN LAIN.
