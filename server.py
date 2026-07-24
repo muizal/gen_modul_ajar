@@ -281,11 +281,21 @@ class RequestHandler(SimpleHTTPRequestHandler):
 
     def do_GET(self):
         parsed = urlparse(self.path)
+        if parsed.path == "/api/login-status":
+            self.send_json({
+                "logged_in": is_logged_in(self),
+                "admin": is_admin(self),
+                "role": session_role(self),
+                "admin_username_configured": bool(ADMIN_USERNAME),
+                "admin_password_configured": bool(ADMIN_PASSWORD),
+            })
+            return
         if parsed.path == "/api/admin/status":
             self.send_json({
                 "admin": is_admin(self),
                 "role": session_role(self),
-                "configured": bool(ADMIN_USERNAME and ADMIN_PASSWORD),
+                "admin_username_configured": bool(ADMIN_USERNAME),
+                "admin_password_configured": bool(ADMIN_PASSWORD),
             })
             return
         if parsed.path == "/api/admin/cp":
@@ -299,15 +309,61 @@ class RequestHandler(SimpleHTTPRequestHandler):
     def do_POST(self):
         parsed = urlparse(self.path)
 
+        if parsed.path == "/api/login":
+            data = self.read_json_body()
+            if not isinstance(data, dict):
+                self.send_json({"success": False, "message": "Body tidak valid."}, status=400)
+                return
+            u = (data.get("username") or "").strip()
+            p = (data.get("password") or "").strip()
+
+            # Guru login (legacy). Single endpoint memeriksa kedua-duanya; backend menentukan role.
+            if hmac.compare_digest(u, GURU_USERNAME) and hmac.compare_digest(p, GURU_PASSWORD):
+                token = make_session_token("guru")
+                cookie = (
+                    f"guru_session={token}; Path=/; HttpOnly; SameSite=Strict; "
+                    f"Max-Age={SESSION_TTL_SECONDS}"
+                )
+                self.send_json(
+                    {"success": True, "role": "guru"},
+                    extra_headers={"Set-Cookie": cookie},
+                )
+                return
+
+            # Admin login diverifikasi server-side dari env vars. Frontend tidak pernah memvalidasi.
+            if ADMIN_USERNAME and ADMIN_PASSWORD:
+                if hmac.compare_digest(u, ADMIN_USERNAME) and hmac.compare_digest(p, ADMIN_PASSWORD):
+                    token = make_session_token("admin")
+                    cookie = (
+                        f"admin_session={token}; Path=/; HttpOnly; SameSite=Strict; "
+                        f"Max-Age={SESSION_TTL_SECONDS}"
+                    )
+                    self.send_json(
+                        {"success": True, "role": "admin"},
+                        extra_headers={"Set-Cookie": cookie},
+                    )
+                    return
+
+            if not ADMIN_USERNAME or not ADMIN_PASSWORD:
+                self.send_json(
+                    {"success": False, "message": "ADMIN_USERNAME / ADMIN_PASSWORD belum dikonfigurasi."},
+                    status=503,
+                )
+                return
+            self.send_json(
+                {"success": False, "message": "Username atau password salah"},
+                status=401,
+            )
+            return
+
         if parsed.path in ("/api/auth/login", "/api/auth/admin-login", "/api/admin/login"):
+            # Backward-compat alias with legacy response shape.
             data = self.read_json_body()
             if not isinstance(data, dict):
                 self.send_json({"error": "Body tidak valid."}, status=400)
                 return
             u = (data.get("username") or "").strip()
             p = (data.get("password") or "").strip()
-
-            # Cek role guru (login guru yang selama ini dipakai).
             if hmac.compare_digest(u, GURU_USERNAME) and hmac.compare_digest(p, GURU_PASSWORD):
                 token = make_session_token("guru")
                 cookie = (
@@ -316,8 +372,6 @@ class RequestHandler(SimpleHTTPRequestHandler):
                 )
                 self.send_json({"ok": True, "role": "guru"}, extra_headers={"Set-Cookie": cookie})
                 return
-
-            # Cek role admin dari environment variables. Credentials TIDAK pernah dipetakan ke frontend.
             if ADMIN_USERNAME and ADMIN_PASSWORD:
                 if hmac.compare_digest(u, ADMIN_USERNAME) and hmac.compare_digest(p, ADMIN_PASSWORD):
                     token = make_session_token("admin")
@@ -327,7 +381,6 @@ class RequestHandler(SimpleHTTPRequestHandler):
                     )
                     self.send_json({"ok": True, "role": "admin"}, extra_headers={"Set-Cookie": cookie})
                     return
-
             if not ADMIN_USERNAME or not ADMIN_PASSWORD:
                 self.send_json({"error": "ADMIN_USERNAME / ADMIN_PASSWORD belum dikonfigurasi."}, status=503)
                 return
@@ -474,6 +527,10 @@ def session_role(handler):
         if verify_role_cookie(handler.headers.get("Cookie", ""), role):
             return role
     return None
+
+
+def is_logged_in(handler):
+    return session_role(handler) is not None
 
 
 def load_storage():

@@ -1,0 +1,365 @@
+FIX ADMIN LOGIN ONLY — CRITICAL BUG
+
+JANGAN MENAMBAH FITUR.
+JANGAN REDESIGN.
+JANGAN REFACTOR PROJECT.
+JANGAN SENTUH GENERATOR, CP, ATAU AI.
+
+MASALAH:
+
+Login Guru:
+username: guru
+password: merdeka2026
+
+BERHASIL.
+
+Login Admin menggunakan credentials dari Replit Secrets:
+
+ADMIN_USERNAME
+ADMIN_PASSWORD
+
+TIDAK BERHASIL.
+
+Artinya implementasi Admin login sebelumnya belum terhubung dengan benar.
+
+==================================================
+1. DIAGNOSIS DULU
+==================================================
+
+Periksa kode project EXISTING dan temukan:
+
+- form login yang benar-benar digunakan browser
+- event submit login
+- handleLogin() atau fungsi login equivalent
+- endpoint backend login jika ada
+- route admin jika ada
+- mekanisme session jika ada
+- bagaimana login guru divalidasi
+- apakah ADMIN_USERNAME dibaca server
+- apakah ADMIN_PASSWORD dibaca server
+
+JANGAN membuat sistem login kedua sebelum mengetahui alur existing.
+
+==================================================
+2. PERIKSA ENVIRONMENT VARIABLE
+==================================================
+
+Pada SERVER, cek hanya keberadaan:
+
+process.env.ADMIN_USERNAME
+process.env.ADMIN_PASSWORD
+
+JANGAN log nilainya.
+
+Boleh log sementara:
+
+ADMIN_USERNAME configured: true/false
+ADMIN_PASSWORD configured: true/false
+
+JANGAN pernah print password atau API key.
+
+Jika environment variable tidak terbaca, perbaiki penggunaan environment variable sesuai runtime project existing.
+
+==================================================
+3. BUAT SATU ENDPOINT LOGIN
+==================================================
+
+Jika belum ada endpoint autentikasi backend yang benar-benar digunakan,
+buat SATU endpoint minimal:
+
+POST /api/login
+
+Request:
+
+{
+  "username": "...",
+  "password": "..."
+}
+
+Response sukses:
+
+{
+  "success": true,
+  "role": "guru"
+}
+
+atau:
+
+{
+  "success": true,
+  "role": "admin"
+}
+
+Response gagal:
+
+{
+  "success": false,
+  "message": "Username atau password salah"
+}
+
+==================================================
+4. VALIDASI LOGIN DI SERVER
+==================================================
+
+Di backend:
+
+ADMIN:
+
+username harus dibandingkan dengan:
+
+process.env.ADMIN_USERNAME
+
+password harus dibandingkan dengan:
+
+process.env.ADMIN_PASSWORD
+
+
+GURU:
+
+pertahankan kredensial existing:
+
+guru
+merdeka2026
+
+Jangan merusak login Guru yang sekarang sudah bekerja.
+
+==================================================
+5. FRONTEND HARUS MENGGUNAKAN ENDPOINT YANG SAMA
+==================================================
+
+Ini sangat penting.
+
+Form login EXISTING yang saat ini berhasil digunakan untuk:
+
+guru / merdeka2026
+
+harus mengirim username/password ke:
+
+POST /api/login
+
+JANGAN memiliki:
+
+loginGuru()
+loginAdmin()
+
+yang berjalan terpisah jika tidak diperlukan.
+
+Gunakan SATU form login dan SATU endpoint.
+
+Backend menentukan role.
+
+==================================================
+6. ALUR
+==================================================
+
+User memasukkan username/password
+        ↓
+POST /api/login
+        ↓
+Backend validasi
+        ↓
+response.role
+        ↓
+Frontend menyimpan status login
+
+Jika:
+
+role === "guru"
+
+tampilkan akses Guru.
+
+Jika:
+
+role === "admin"
+
+tampilkan akses Admin + Kelola CP.
+
+==================================================
+7. HAPUS KONFLIK LOGIN FRONTEND
+==================================================
+
+Cari kode lama seperti:
+
+if (
+ username === "guru" &&
+ password === "merdeka2026"
+)
+
+Jika pengecekan tersebut membuat login berhenti sebelum request backend,
+ubah sehingga form menggunakan /api/login.
+
+Jangan biarkan frontend menolak username Admin sebelum backend memeriksanya.
+
+==================================================
+8. ADMIN MENU
+==================================================
+
+Jika response:
+
+role === "admin"
+
+pastikan:
+
+Kelola CP
+
+ditampilkan.
+
+Admin juga boleh menggunakan generator.
+
+==================================================
+9. GURU
+==================================================
+
+Jika:
+
+role === "guru"
+
+generator/download tetap berfungsi.
+
+Jangan tampilkan:
+
+Kelola CP.
+
+==================================================
+10. DEBUG ERROR YANG SEBENARNYA
+==================================================
+
+Jika Admin masih gagal, tentukan penyebab sebenarnya.
+
+Periksa:
+
+A. /api/login menerima request atau tidak
+
+B. ADMIN_USERNAME tersedia atau tidak
+
+C. ADMIN_PASSWORD tersedia atau tidak
+
+D. username/password dibandingkan di backend atau tidak
+
+E. response role admin sampai ke frontend atau tidak
+
+F. frontend salah memproses response atau tidak
+
+G. server perlu restart setelah Secrets ditambahkan atau tidak
+
+Perbaiki HANYA titik yang gagal.
+
+==================================================
+11. TEST LANGSUNG
+==================================================
+
+Lakukan test endpoint terlebih dahulu.
+
+TEST GURU:
+
+POST /api/login
+
+dengan credentials Guru existing.
+
+Expected:
+
+{
+ "success": true,
+ "role": "guru"
+}
+
+TEST ADMIN:
+
+gunakan environment variables Admin.
+
+Expected:
+
+{
+ "success": true,
+ "role": "admin"
+}
+
+JANGAN tampilkan password dalam log/report.
+
+Setelah endpoint keduanya berhasil,
+baru test form browser.
+
+==================================================
+12. TEST BROWSER
+==================================================
+
+Login Guru.
+
+Expected:
+
+berhasil sebagai guru.
+
+Login Admin.
+
+Expected:
+
+berhasil sebagai admin dan menu:
+
+Kelola CP
+
+muncul.
+
+==================================================
+13. JIKA SECRETS TIDAK TERBACA
+==================================================
+
+JANGAN membuat fallback:
+
+sayangku / sayangku
+
+di frontend.
+
+Laporkan secara eksplisit:
+
+ADMIN_USERNAME configured: YES/NO
+ADMIN_PASSWORD configured: YES/NO
+
+Jika NO, STOP dan jelaskan bahwa Replit Secrets belum tersedia pada runtime.
+
+==================================================
+14. JANGAN SENTUH BAGIAN LAIN
+==================================================
+
+DILARANG mengubah:
+
+AI_API_KEY
+/api/generate
+cp-data.js
+curriculum-map.js
+Modul Ajar
+LKPD
+Asesmen
+Prota
+Prosem
+ATP
+KKTP
+AME
+PDF
+Word
+Excel
+UI utama
+
+==================================================
+15. STOP
+==================================================
+
+Begitu:
+
+GURU LOGIN = BERHASIL
+ADMIN LOGIN = BERHASIL
+ADMIN MENU = MUNCUL
+
+STOP CODING.
+
+Berikan laporan HANYA:
+
+LOGIN ENDPOINT: WORKING / ERROR
+ADMIN_USERNAME CONFIGURED: YES / NO
+ADMIN_PASSWORD CONFIGURED: YES / NO
+GURU LOGIN: WORKING / ERROR
+ADMIN LOGIN: WORKING / ERROR
+ADMIN ROLE RECEIVED: YES / NO
+KELOLA CP MENU: WORKING / ERROR
+ROOT CAUSE: ...
+
+JANGAN MELAKUKAN PEKERJAAN LAIN.

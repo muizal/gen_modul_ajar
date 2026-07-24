@@ -1171,18 +1171,18 @@
             if (errEl) errEl.classList.add('hidden');
             if (secretsEl) secretsEl.classList.add('hidden');
             try {
-                const res = await fetch('/api/auth/login', {
+                const res = await fetch('/api/login', {
                     method: 'POST',
                     credentials: 'include',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ username: u, password: p })
                 });
                 const data = await res.json().catch(() => ({}));
-                if (res.ok && data.ok) {
+                if (res.ok && data.success) {
                     currentRole = data.role || 'guru';
                     isAdmin = currentRole === 'admin';
-                    isLoggedIn = true;
                     isGuru = currentRole === 'guru';
+                    isLoggedIn = true;
                     updateAuthUI();
                     document.getElementById('login-username').value = '';
                     document.getElementById('login-password').value = '';
@@ -1193,6 +1193,7 @@
                     if (secretsEl) secretsEl.classList.remove('hidden');
                 } else {
                     if (errEl) errEl.classList.remove('hidden');
+                    if (errEl && data && data.message) errEl.textContent = data.message;
                 }
             } catch (err) {
                 if (errEl) errEl.classList.remove('hidden');
