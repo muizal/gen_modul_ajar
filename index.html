@@ -507,12 +507,18 @@
 
         // --- STREAMING_CHUNK:Logika Navigasi Tab dan UI Dinamis ---
         window.switchTab = function(tabId) {
+            // HARD GUARD: tab-admin hanya dapat dibuka jika currentRole === 'admin'.
+            // Blok ini mencegah pemanggilan via console atau jalur lain.
+            if (tabId === 'tab-admin' && currentRole !== 'admin') {
+                showToast("Akses khusus administrator. Silakan login sebagai admin.");
+                tabId = 'tab-generator';
+            }
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
             document.querySelectorAll('.tab-btn').forEach(el => el.className = 'tab-btn px-8 py-3 rounded-full font-bold transition-all duration-300 bg-white text-slate-600 shadow border border-slate-200 hover:bg-slate-50 hover:-translate-y-1');
             document.getElementById(tabId).classList.remove('hidden');
-            const activeBtn = tabId === 'tab-pemetaan' ? 'btn-pemetaan' : 'btn-generator';
-            document.getElementById(activeBtn).className = 'tab-btn active px-8 py-3 rounded-full font-bold transition-all duration-300 bg-gradient-to-r from-accent to-primary text-white shadow-lg hover:-translate-y-1';
-            
+            const activeBtn = tabId === 'tab-pemetaan' ? 'btn-pemetaan' : (tabId === 'tab-admin' ? 'btn-admin' : 'btn-generator');
+            if (activeBtn) document.getElementById(activeBtn).className = 'tab-btn active px-8 py-3 rounded-full font-bold transition-all duration-300 bg-gradient-to-r from-accent to-primary text-white shadow-lg hover:-translate-y-1';
+
             // Generate Pilihan Mapel Pemetaan
             if(document.getElementById('mapel-pemetaan').options.length <= 1) {
                 document.getElementById('mapel-pemetaan').innerHTML = document.getElementById('gen-mapel').innerHTML;

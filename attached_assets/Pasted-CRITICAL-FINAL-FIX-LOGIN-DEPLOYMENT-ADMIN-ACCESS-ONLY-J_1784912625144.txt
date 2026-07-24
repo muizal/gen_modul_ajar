@@ -1,0 +1,511 @@
+CRITICAL FINAL FIX — LOGIN + DEPLOYMENT + ADMIN ACCESS ONLY
+
+JANGAN TAMBAH FITUR BARU.
+JANGAN REDESIGN.
+JANGAN REFACTOR PROJECT.
+JANGAN SENTUH GENERATOR AI/CP KECUALI TERKAIT AKSES ADMIN.
+
+Ada 3 masalah nyata yang harus diperbaiki.
+
+==================================================
+MASALAH 1 — REPLIT PREVIEW
+==================================================
+
+Di Replit Preview:
+
+guru / merdeka2026
+BERHASIL.
+
+Admin melalui ADMIN_USERNAME / ADMIN_PASSWORD
+GAGAL.
+
+==================================================
+MASALAH 2 — WEBSITE PUBLISHED
+==================================================
+
+Website sudah dipublish.
+
+Pada website published:
+
+Admin tidak bisa login.
+
+Guru / merdeka2026 juga tidak bisa login.
+
+Ini menunjukkan kemungkinan website published tidak menjalankan
+backend Python server.py atau request /api/login tidak menuju backend.
+
+==================================================
+MASALAH 3 — KELOLA CP TERLIHAT TANPA ADMIN
+==================================================
+
+Website mempunyai tab:
+
+Pemetaan CP & Materi
+Generator Instrumen
+
+Ketika salah satu tab digunakan, menu:
+
+Kelola CP
+
+dapat muncul walaupun pengguna BUKAN Admin.
+
+Ini salah.
+
+Kelola CP HARUS:
+- tersembunyi ketika belum login
+- tersembunyi untuk Guru
+- terlihat HANYA untuk Admin
+
+==================================================
+TUGAS 1 — JANGAN BERASUMSI
+==================================================
+
+Periksa project existing yang sebenarnya.
+
+Project menggunakan:
+
+index.html
+server.py
+
+Replit workflow seharusnya menjalankan:
+
+python server.py
+
+pada PORT environment / port 5000.
+
+JANGAN membuat backend baru.
+
+Gunakan server.py existing.
+
+==================================================
+TUGAS 2 — PERIKSA PUBLISHED DEPLOYMENT
+==================================================
+
+Pastikan deployment Replit menjalankan:
+
+python server.py
+
+BUKAN hanya static hosting index.html.
+
+Website published harus mempunyai endpoint:
+
+GET /api/login-status
+
+GET /api/admin/status
+
+POST /api/login
+
+POST /api/auth/logout
+
+POST /api/generate
+
+dan endpoint Admin existing.
+
+Jika deployment saat ini adalah static deployment,
+JANGAN mencoba membuat login bekerja hanya dengan JavaScript frontend.
+
+Laporkan secara jelas bahwa deployment harus menggunakan runtime/server
+yang menjalankan server.py.
+
+Sesuaikan konfigurasi deployment project seminimal mungkin agar
+published app menjalankan:
+
+python server.py
+
+dengan PORT dari environment.
+
+==================================================
+TUGAS 3 — TEST ENDPOINT PUBLISHED
+==================================================
+
+Pada runtime/deployment, test:
+
+GET /api/login-status
+
+Expected JSON, BUKAN:
+- HTML
+- 404
+- index.html
+
+Jika endpoint mengembalikan HTML atau 404,
+ROOT CAUSE adalah backend tidak berjalan pada deployment.
+
+Perbaiki konfigurasi deployment, bukan form login.
+
+==================================================
+TUGAS 4 — ADMIN SECRETS
+==================================================
+
+server.py sudah membaca:
+
+ADMIN_USERNAME = os.environ.get("ADMIN_USERNAME", "").strip()
+ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "").strip()
+
+JANGAN hardcode Admin credentials di frontend.
+
+Pastikan deployment environment mempunyai:
+
+ADMIN_USERNAME
+ADMIN_PASSWORD
+
+JANGAN menampilkan nilainya.
+
+GET /api/login-status harus menunjukkan:
+
+admin_username_configured: true
+admin_password_configured: true
+
+Jika Preview true tetapi Deployment false,
+berarti Secrets belum tersedia pada deployment environment.
+
+Perbaiki/konfigurasikan environment deployment agar menggunakan
+Secrets tersebut.
+
+==================================================
+TUGAS 5 — LOGIN GURU
+==================================================
+
+Pertahankan:
+
+guru
+merdeka2026
+
+Login Guru harus melalui:
+
+POST /api/login
+
+Expected:
+
+{
+  "success": true,
+  "role": "guru"
+}
+
+Jangan membuat login Guru frontend-only.
+
+==================================================
+TUGAS 6 — LOGIN ADMIN
+==================================================
+
+Login Admin melalui endpoint yang SAMA:
+
+POST /api/login
+
+Gunakan:
+
+ADMIN_USERNAME
+ADMIN_PASSWORD
+
+Expected:
+
+{
+  "success": true,
+  "role": "admin"
+}
+
+Set-Cookie session Admin harus berhasil.
+
+==================================================
+TUGAS 7 — COOKIE / SESSION
+==================================================
+
+Periksa session cookie existing.
+
+Pastikan login dari website published dapat mempertahankan session.
+
+Frontend menggunakan:
+
+credentials: "include"
+
+Pertahankan itu.
+
+Karena frontend dan backend seharusnya berada pada origin/domain
+deployment yang sama, gunakan cookie session existing.
+
+Jangan membuat localStorage sebagai pengganti autentikasi Admin.
+
+==================================================
+TUGAS 8 — PERBAIKI KELOLA CP
+==================================================
+
+Ini WAJIB.
+
+Tombol:
+
+#btn-admin
+
+HARUS default:
+
+hidden
+
+dan HANYA boleh:
+
+classList.remove("hidden")
+
+ketika:
+
+currentRole === "admin"
+
+Tidak boleh bergantung pada:
+- tab yang dipilih
+- switchTab()
+- generator
+- mapel
+- status CP
+- isLoggedIn umum
+
+HANYA:
+
+role === "admin"
+
+==================================================
+TUGAS 9 — PROTEKSI switchTab
+==================================================
+
+Perbaiki:
+
+switchTab('tab-admin')
+
+atau mekanisme equivalent.
+
+Jika:
+
+currentRole !== "admin"
+
+maka:
+
+JANGAN buka tab-admin.
+
+Kembalikan ke tab normal atau tampilkan:
+
+"Akses khusus administrator."
+
+Dengan demikian walaupun seseorang memanggil:
+
+switchTab('tab-admin')
+
+melalui console/browser,
+
+UI Admin tidak boleh dibuka.
+
+==================================================
+TUGAS 10 — PROTEKSI BACKEND TETAP WAJIB
+==================================================
+
+Endpoint:
+
+GET /api/admin/cp
+POST /api/admin/cp
+PUT/PATCH jika ada
+DELETE jika ada
+
+HARUS tetap menggunakan:
+
+is_admin(self)
+
+Jangan hanya mengandalkan hidden button.
+
+==================================================
+TUGAS 11 — updateAuthUI()
+==================================================
+
+Pastikan logika hanya:
+
+IF role === admin:
+    tampilkan Kelola CP
+
+ELSE:
+    sembunyikan Kelola CP
+
+Guru:
+    sembunyikan Kelola CP
+
+Belum login:
+    sembunyikan Kelola CP
+
+Jangan ada fungsi lain yang membuka btn-admin.
+
+Cari seluruh source code untuk:
+
+btn-admin
+tab-admin
+classList.remove('hidden')
+
+dan pastikan tidak ada jalur lain yang membuat menu Admin muncul.
+
+==================================================
+TUGAS 12 — REFRESH SESSION
+==================================================
+
+Pada page load:
+
+GET /api/admin/status
+
+Jika response:
+
+role = admin
+→ tampilkan Kelola CP
+
+role = guru
+→ sembunyikan Kelola CP
+
+role = null
+→ sembunyikan Kelola CP
+
+Jika request gagal:
+→ anggap BELUM LOGIN
+→ sembunyikan Kelola CP
+
+FAIL CLOSED.
+
+==================================================
+TUGAS 13 — JANGAN OTOMATIS BUKA ADMIN
+==================================================
+
+Klik:
+
+Pemetaan CP & Materi
+
+atau:
+
+Generator Instrumen
+
+TIDAK BOLEH:
+
+- mengubah isAdmin
+- mengubah currentRole menjadi admin
+- menampilkan btn-admin
+- membuka tab-admin
+
+Perbaiki jika ada event/tab logic yang melakukan itu.
+
+==================================================
+TUGAS 14 — TEST PREVIEW
+==================================================
+
+Test Replit Preview:
+
+A. Belum login
+Kelola CP = HIDDEN
+
+B. Guru login
+guru / merdeka2026
+Login = SUCCESS
+Kelola CP = HIDDEN
+
+C. Admin login
+gunakan ADMIN_USERNAME / ADMIN_PASSWORD
+Login = SUCCESS
+Kelola CP = VISIBLE
+
+D. Logout Admin
+Kelola CP = HIDDEN
+
+==================================================
+TUGAS 15 — TEST PUBLISHED APP
+==================================================
+
+Test deployment/published URL yang sebenarnya.
+
+A.
+
+GET /api/login-status
+
+harus JSON.
+
+B.
+
+Guru login
+→ SUCCESS
+
+C.
+
+Admin login
+→ SUCCESS
+
+D.
+
+Admin refresh browser
+→ session tetap dikenali
+
+E.
+
+Guru/non-login
+→ Kelola CP tidak pernah terlihat.
+
+==================================================
+TUGAS 16 — GITHUB
+==================================================
+
+JANGAN menganggap GitHub Pages dapat menjalankan server.py.
+
+Jika published website menggunakan GitHub Pages/static hosting,
+jelaskan:
+
+"GitHub Pages hanya menyajikan frontend dan tidak dapat menjalankan
+server.py, sehingga /api/login dan /api/generate tidak dapat bekerja."
+
+JANGAN memindahkan autentikasi/API key ke frontend untuk mengakalinya.
+
+Jika GitHub hanya digunakan sebagai repository/sync source,
+itu tidak masalah.
+
+Runtime production tetap harus menjalankan server.py.
+
+==================================================
+TUGAS 17 — JANGAN SENTUH
+==================================================
+
+JANGAN ubah:
+
+AI_API_KEY
+provider AI
+CP tahun 2025/2026
+curriculum-map.js
+struktur Modul Ajar
+ATP
+KKTP
+Prota
+Prosem
+AME
+Daftar Nilai
+PDF
+Word
+Excel
+
+kecuali perubahan benar-benar diperlukan untuk bug autentikasi.
+
+==================================================
+TUGAS 18 — TEST MINIMAL, LALU STOP
+==================================================
+
+Jangan melakukan refactor kosmetik.
+
+Setelah ketiga masalah selesai:
+
+STOP.
+
+Laporan akhir HANYA:
+
+REPLIT PREVIEW BACKEND: WORKING / ERROR
+PUBLISHED BACKEND: WORKING / ERROR
+/api/login-status PUBLISHED: JSON / 404 / HTML / ERROR
+
+ADMIN SECRETS PREVIEW: YES / NO
+ADMIN SECRETS DEPLOYMENT: YES / NO
+
+GURU LOGIN PREVIEW: WORKING / ERROR
+ADMIN LOGIN PREVIEW: WORKING / ERROR
+
+GURU LOGIN PUBLISHED: WORKING / ERROR
+ADMIN LOGIN PUBLISHED: WORKING / ERROR
+
+KELOLA CP LOGGED OUT: HIDDEN / ERROR
+KELOLA CP GURU: HIDDEN / ERROR
+KELOLA CP ADMIN: VISIBLE / ERROR
+
+ROOT CAUSE:
+...
+
+KREDIT REPLIT SANGAT TERBATAS.
+PERBAIKI HANYA 3 MASALAH DI ATAS.
